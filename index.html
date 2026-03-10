@@ -1744,6 +1744,16 @@ function load() {
   } catch(e){}
 }
 
+// ============ PROFILE CONSTANTS ============
+const PROFILE_SLOTS = ['max', 'kirsty'];
+const PROFILE_EMOJIS = ['🏋️','🏃','🧗','🚴','🤸','🏊','⚽','🎯','💪','🔥'];
+const PROFILE_COLORS = [
+  {label:'Green',  color:'#2D6A4F', light:'#52B788', theme:'max-theme',    border:'var(--max)'},
+  {label:'Purple', color:'#5E4B8B', light:'#9B84D4', theme:'kirsty-theme', border:'var(--kirsty)'},
+  {label:'Blue',   color:'#1D6FA4', light:'#56B4E9', theme:'max-theme',    border:'#56B4E9'},
+  {label:'Red',    color:'#9B2226', light:'#E63946', theme:'kirsty-theme', border:'#E63946'},
+];
+
 // ============ INIT ============
 window.addEventListener('DOMContentLoaded', () => {
   load();
@@ -1772,15 +1782,6 @@ window.addEventListener('DOMContentLoaded', () => {
   updateHeaderDate();
 });
 
-// ============ PROFILE CARDS (dynamic) ============
-const PROFILE_SLOTS = ['max', 'kirsty'];
-const PROFILE_EMOJIS = ['🏋️','🏃','🧗','🚴','🤸','🏊','⚽','🎯','💪','🔥'];
-const PROFILE_COLORS = [
-  {label:'Green',  color:'#2D6A4F', light:'#52B788', theme:'max-theme',    border:'var(--max)'},
-  {label:'Purple', color:'#5E4B8B', light:'#9B84D4', theme:'kirsty-theme', border:'var(--kirsty)'},
-  {label:'Blue',   color:'#1D6FA4', light:'#56B4E9', theme:'max-theme',    border:'#56B4E9'},
-  {label:'Red',    color:'#9B2226', light:'#E63946', theme:'kirsty-theme', border:'#E63946'},
-];
 
 function renderProfileCards() {
   const container = document.getElementById('profile-cards-container');
