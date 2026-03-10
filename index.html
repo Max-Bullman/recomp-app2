@@ -685,20 +685,18 @@ input { font-family: var(--font-body); }
 <!-- PROFILE SELECT -->
 <div id="profile-select">
   <h1>ReComp 💪</h1>
-  <p id="profile-select-subtitle">Who's training today?</p>
-  <div class="profile-cards" id="profile-cards-container"></div>
-</div>
-
-<!-- ONBOARDING MODAL -->
-<div class="modal-overlay" id="onboarding-modal">
-  <div class="modal" style="max-height:92vh;overflow-y:auto">
-    <div class="modal-handle"></div>
-    <div class="flex-between" style="margin-bottom:14px">
-      <div class="modal-title" style="margin-bottom:0" id="ob-title">Create Profile</div>
-      <button class="modal-close" onclick="closeOnboarding()">✕</button>
+  <p>Who's training today?</p>
+  <div class="profile-cards">
+    <div class="profile-card max-card" onclick="selectProfile('max')">
+      <div class="profile-avatar">🏋️</div>
+      <div class="profile-name">Max</div>
+      <div class="profile-stats">Tap to enter</div>
     </div>
-    <div class="cpb-steps" id="ob-steps"></div>
-    <div id="ob-body"></div>
+    <div class="profile-card kirsty-card" onclick="selectProfile('kirsty')">
+      <div class="profile-avatar">🏃</div>
+      <div class="profile-name">Kirsty</div>
+      <div class="profile-stats">Tap to enter</div>
+    </div>
   </div>
 </div>
 
@@ -1245,6 +1243,521 @@ const PROFILES = {
   }
 };
 
+
+const SUPPLEMENTS = {
+  max: [
+    { id:'creatine',  name:'Creatine Monohydrate', dose:'5g', timing:'morning', timingLabel:'Morning', detail:'Mix into your first shake or glass of water. Timing flexible — consistency is what matters.' },
+    { id:'vitd',      name:'Vitamin D3 (2000–4000 IU)', dose:'1 capsule', timing:'morning', timingLabel:'Morning', detail:'Take with breakfast — fat-soluble, absorbs better with food.' },
+    { id:'omega3',    name:'Omega-3 Fish Oil', dose:'2 capsules', timing:'morning', timingLabel:'Morning', detail:'Take with a meal. Supports joint health and reduces inflammation.' },
+    { id:'magnesium', name:'Magnesium Glycinate', dose:'300–400mg', timing:'night', timingLabel:'Pre-bed', detail:'30–60 min before sleep. Supports recovery, deep sleep and muscle relaxation.' },
+    { id:'zinc',      name:'Zinc (as Zinc Citrate)', dose:'15–25mg', timing:'night', timingLabel:'Pre-bed', detail:'Take away from calcium/iron. Supports testosterone, immune function and muscle repair. Important during calorie deficit.' },
+  ],
+  kirsty: [
+    { id:'creatine',  name:'Creatine Monohydrate', dose:'5g', timing:'morning', timingLabel:'Morning', detail:'Mix into water or yoghurt. Take at the same time daily — loading is not needed.' },
+    { id:'vitd',      name:'Vitamin D3 (2000–4000 IU)', dose:'1 capsule', timing:'morning', timingLabel:'Morning', detail:'With breakfast. Critical for UK residents year-round.' },
+    { id:'omega3',    name:'Omega-3 Fish Oil', dose:'2 capsules', timing:'morning', timingLabel:'Morning', detail:'With a meal. Anti-inflammatory, supports hormonal health.' },
+    { id:'magnesium', name:'Magnesium Glycinate', dose:'300mg', timing:'night', timingLabel:'Pre-bed', detail:'30–60 min before sleep. Helps with stress, sleep quality and IBS symptoms.' },
+    { id:'ironvitc',  name:'Vitamin C', dose:'500mg', timing:'morning', timingLabel:'Morning', detail:'With breakfast. Supports immune function and iron absorption.' },
+    { id:'iron',      name:'Iron (Ferrous Bisglycinate)', dose:'18–25mg', timing:'morning', timingLabel:'Morning', detail:'Take on an empty stomach with Vitamin C for best absorption. Ferrous bisglycinate is gentler on IBS than ferrous sulphate. Common deficiency in active females.' },
+  ]
+};
+
+const DIET_OPTIONS = [
+  {id:'vegetarian', label:'🥦 Vegetarian'},
+  {id:'vegan', label:'🌱 Vegan'},
+  {id:'glutenfree', label:'🌾 Gluten-free'},
+  {id:'dairyfree', label:'🥛 Dairy-free'},
+  {id:'highprotein', label:'💪 High protein'},
+  {id:'lowcarb', label:'📉 Low carb'},
+  {id:'halal', label:'☪️ Halal'},
+  {id:'kosher', label:'✡️ Kosher'},
+];
+
+const PLAN_GOALS = [
+  {id:'all',       label:'All Plans'},
+  {id:'recomp',    label:'🔄 Recomp'},
+  {id:'fatloss',   label:'🔥 Fat Loss'},
+  {id:'muscle',    label:'💪 Muscle'},
+  {id:'strength',  label:'🏋️ Strength'},
+  {id:'beginner',  label:'🌱 Beginner'},
+  {id:'athletic',  label:'⚡ Athletic'},
+  {id:'home',      label:'🏠 Home'},
+];
+
+const PLAN_LIBRARY = [
+  // ── RECOMP ──
+  {id:'recomp_4day', goal:'recomp', icon:'🔄', name:'4-Day Upper/Lower Recomp', defaultFor:['max'],
+   desc:'The gold standard for body recomposition. Heavy compounds Monday/Thursday, accessory work Tuesday/Friday. Balances strength retention with fat loss.',
+   days:4, frequency:'4×/week', equipment:'Full gym', level:'Intermediate', duration:'12–20 weeks',
+   progressionModel:'double',
+   schedule:[
+     {day:'Mon',type:'training',name:'Upper A — Push Focus',exercises:[
+       {name:'Barbell Bench Press',sets:4,reps:'5–6',rest:'3 min',note:'Primary strength movement. Add 2.5kg when all sets hit top of range.'},
+       {name:'Incline Dumbbell Press',sets:3,reps:'8–10',rest:'2 min',note:'Squeeze at top. Control the eccentric.'},
+       {name:'Seated DB Shoulder Press',sets:3,reps:'8–10',rest:'2 min',note:'Drive elbows down on descent.'},
+       {name:'Face Pulls (Cable)',sets:3,reps:'15–20',rest:'60s',note:'External rotation. Shoulder health — never skip.'},
+       {name:'Cable Lateral Raises',sets:3,reps:'12–15',rest:'60s',note:'Light weight, feel the mid-delt burn.'},
+       {name:'Tricep Pushdowns (Rope)',sets:3,reps:'12–15',rest:'60s',note:'Elbows pinned throughout.'},
+     ]},
+     {day:'Tue',type:'training',name:'Lower A — Quad Focus',exercises:[
+       {name:'Barbell Back Squat',sets:4,reps:'5–6',rest:'3 min',note:'Priority compound. Brace core, drive knees out.'},
+       {name:'Romanian Deadlift',sets:3,reps:'8–10',rest:'2.5 min',note:'Hinge, not squat. Hamstring stretch every rep.'},
+       {name:'Leg Press',sets:3,reps:'10–12',rest:'2 min',note:'Full depth, controlled.'},
+       {name:'Walking Lunges',sets:3,reps:'12 each',rest:'90s',note:'Add DBs when bodyweight is easy.'},
+       {name:'Lying Leg Curl',sets:3,reps:'12–15',rest:'90s',note:'Pause at top of each contraction.'},
+       {name:'Calf Raises (Machine)',sets:4,reps:'15–20',rest:'60s',note:'Deep stretch at bottom every rep.'},
+     ]},
+     {day:'Wed',type:'recovery',name:'Active Recovery',exercises:[]},
+     {day:'Thu',type:'training',name:'Upper B — Pull Focus',exercises:[
+       {name:'Weighted Pull-Ups / Lat Pulldown',sets:4,reps:'6–8',rest:'2.5 min',note:'If bodyweight is hard, use lat pulldown.'},
+       {name:'Barbell Bent-Over Row',sets:4,reps:'6–8',rest:'2.5 min',note:'Chest up, row to belly button.'},
+       {name:'Seated Cable Row (Close Grip)',sets:3,reps:'10–12',rest:'2 min',note:'Squeeze shoulder blades together.'},
+       {name:'Face Pulls (Cable)',sets:3,reps:'15–20',rest:'60s',note:'Non-negotiable for shoulder longevity.'},
+       {name:'Barbell Bicep Curl',sets:3,reps:'10–12',rest:'60s',note:'No swinging. Controlled tempo.'},
+       {name:'Hammer Curl',sets:2,reps:'10–12',rest:'60s',note:'Builds brachialis — arm thickness.'},
+     ]},
+     {day:'Fri',type:'training',name:'Lower B — Posterior Chain',exercises:[
+       {name:'Romanian Deadlift',sets:4,reps:'8–10',rest:'2.5 min',note:'Increase weight when all 4 sets hit 10.'},
+       {name:'Bulgarian Split Squat',sets:3,reps:'10–12 each',rest:'2 min',note:'Front foot forward, control descent.'},
+       {name:'Hip Thrust (Barbell)',sets:3,reps:'10–12',rest:'2 min',note:'Drive through heels, full glute squeeze.'},
+       {name:'Leg Press (Feet High)',sets:3,reps:'12–15',rest:'90s',note:'High placement = glutes/hamstrings.'},
+       {name:'Nordic Curl or Seated Leg Curl',sets:3,reps:'10–12',rest:'90s',note:'Hamstring isolation — injury prevention.'},
+       {name:'Seated Calf Raise',sets:3,reps:'15–20',rest:'60s',note:'Soleus focus, pause at bottom.'},
+     ]},
+     {day:'Sat',type:'cardio',name:'Zone 2 Cardio',exercises:[]},
+     {day:'Sun',type:'rest',name:'Full Rest',exercises:[]},
+   ]},
+
+  {id:'recomp_3day', goal:'recomp', icon:'🔄', name:'3-Day Full Body Recomp',
+   desc:'Perfect if you can only train 3 days. Each session hits every major muscle group. More frequency per muscle = faster recomp at lower volume.',
+   days:3, frequency:'3×/week', equipment:'Full gym', level:'Beginner–Intermediate', duration:'12–16 weeks',
+   progressionModel:'double',
+   schedule:[
+     {day:'Mon',type:'training',name:'Full Body A — Strength Focus',exercises:[
+       {name:'Barbell Back Squat',sets:4,reps:'6–8',rest:'3 min',note:'Priority lift. Every session.'},
+       {name:'Barbell Bench Press',sets:4,reps:'6–8',rest:'3 min',note:'Horizontal push. Track weekly.'},
+       {name:'Barbell Bent-Over Row',sets:4,reps:'6–8',rest:'2.5 min',note:'Equal volume to bench.'},
+       {name:'Romanian Deadlift',sets:3,reps:'8–10',rest:'2 min',note:'Posterior chain essential.'},
+       {name:'Face Pulls',sets:3,reps:'15–20',rest:'60s',note:'Shoulder health. Always.'},
+     ]},
+     {day:'Wed',type:'training',name:'Full Body B — Hypertrophy Focus',exercises:[
+       {name:'Leg Press',sets:4,reps:'10–12',rest:'2 min',note:'Quad volume day.'},
+       {name:'Hip Thrust',sets:3,reps:'10–12',rest:'2 min',note:'Glute focus. Squeeze at top.'},
+       {name:'Lat Pulldown',sets:4,reps:'10–12',rest:'2 min',note:'Pull elbows to ribcage.'},
+       {name:'Incline DB Press',sets:3,reps:'10–12',rest:'90s',note:'Upper chest emphasis.'},
+       {name:'DB Lateral Raise',sets:3,reps:'12–15',rest:'60s',note:'Mid-delt width.'},
+       {name:'Lying Leg Curl',sets:3,reps:'12–15',rest:'90s',note:'Hamstring isolation.'},
+     ]},
+     {day:'Fri',type:'training',name:'Full Body C — Volume + Finisher',exercises:[
+       {name:'Romanian Deadlift',sets:4,reps:'8–10',rest:'2.5 min',note:'Heaviest lift today.'},
+       {name:'Bulgarian Split Squat',sets:3,reps:'10–12 each',rest:'2 min',note:'Unilateral leg work.'},
+       {name:'Seated Cable Row',sets:4,reps:'10–12',rest:'90s',note:'Back volume.'},
+       {name:'DB Shoulder Press',sets:3,reps:'10–12',rest:'90s',note:'Overhead push.'},
+       {name:'Bicep Curl',sets:3,reps:'12–15',rest:'60s',note:'Arm volume.'},
+       {name:'Tricep Pushdown',sets:3,reps:'12–15',rest:'60s',note:'Arm volume.'},
+     ]},
+     {day:'Tue',type:'cardio',name:'Zone 2 Cardio (optional)',exercises:[]},
+     {day:'Thu',type:'cardio',name:'Zone 2 Cardio (optional)',exercises:[]},
+     {day:'Sat',type:'recovery',name:'Active Recovery',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  // ── FAT LOSS ──
+  {id:'fatloss_4day', goal:'fatloss', icon:'🔥', name:'4-Day Metabolic Resistance',
+   desc:'Higher rep ranges, shorter rest periods, supersets. Maximises calorie burn during the session while preserving muscle. Cardio finishers built in.',
+   days:4, frequency:'4×/week', equipment:'Full gym', level:'Intermediate', duration:'8–12 weeks',
+   progressionModel:'double',
+   schedule:[
+     {day:'Mon',type:'training',name:'Upper Metabolic A',exercises:[
+       {name:'DB Bench Press',sets:4,reps:'10–12',rest:'90s',note:'Superset with row below.'},
+       {name:'Seated Cable Row',sets:4,reps:'10–12',rest:'90s',note:'Superset with bench. Rest after both.'},
+       {name:'DB Shoulder Press',sets:3,reps:'12–15',rest:'60s',note:'Controlled eccentric.'},
+       {name:'Lat Pulldown',sets:3,reps:'12–15',rest:'60s',note:'Full stretch at top.'},
+       {name:'Tricep Pushdown',sets:3,reps:'15',rest:'45s',note:'High rep — keep moving.'},
+       {name:'Bicep Curl',sets:3,reps:'15',rest:'45s',note:'Superset with triceps.'},
+       {name:'CARDIO FINISHER: Bike/Row',sets:1,reps:'10 min',rest:'—',note:'All-out effort. Max HR.'},
+     ]},
+     {day:'Tue',type:'training',name:'Lower Metabolic A',exercises:[
+       {name:'Goblet Squat',sets:4,reps:'12–15',rest:'90s',note:'Heavier than you think — challenge yourself.'},
+       {name:'Romanian Deadlift',sets:4,reps:'12–15',rest:'90s',note:'Full hamstring stretch.'},
+       {name:'Walking Lunges',sets:3,reps:'15 each',rest:'60s',note:'Keep moving — no pause at top.'},
+       {name:'Hip Thrust',sets:3,reps:'15',rest:'60s',note:'Drive hard. Glute squeeze.'},
+       {name:'Leg Curl',sets:3,reps:'15',rest:'45s',note:'Slow eccentric.'},
+       {name:'CARDIO FINISHER: Sled Push/Row',sets:1,reps:'8 min',rest:'—',note:'Intervals: 20s on, 10s off.'},
+     ]},
+     {day:'Thu',type:'training',name:'Upper Metabolic B',exercises:[
+       {name:'Pull-Ups or Lat Pulldown',sets:4,reps:'8–12',rest:'90s',note:'If bodyweight is available, use it.'},
+       {name:'Incline DB Press',sets:4,reps:'12–15',rest:'90s',note:'Superset with rows below.'},
+       {name:'Face Pulls',sets:3,reps:'20',rest:'45s',note:'Shoulder health. High rep.'},
+       {name:'DB Lateral Raise',sets:4,reps:'15–20',rest:'45s',note:'Cable if available — constant tension.'},
+       {name:'Cable Fly',sets:3,reps:'15',rest:'60s',note:'Squeeze at midline.'},
+       {name:'CARDIO FINISHER: Rower',sets:1,reps:'12 min',rest:'—',note:'Zone 2 pace — maintain conversation.'},
+     ]},
+     {day:'Fri',type:'training',name:'Lower Metabolic B',exercises:[
+       {name:'Barbell Back Squat',sets:4,reps:'10–12',rest:'2 min',note:'Still the king. Even on fat loss.'},
+       {name:'Bulgarian Split Squat',sets:3,reps:'12 each',rest:'90s',note:'Unilateral = more metabolic.'},
+       {name:'Hip Thrust',sets:4,reps:'15',rest:'60s',note:'Glutes on fire.'},
+       {name:'Leg Extension',sets:3,reps:'15–20',rest:'45s',note:'Quad pump finisher.'},
+       {name:'Seated Leg Curl',sets:3,reps:'15–20',rest:'45s',note:'Hamstring pump.'},
+       {name:'CARDIO FINISHER: Stairmaster/Bike',sets:1,reps:'15 min',rest:'—',note:'Steady state. Zone 2. Focus on breathing.'},
+     ]},
+     {day:'Wed',type:'cardio',name:'Cardio Day',exercises:[]},
+     {day:'Sat',type:'cardio',name:'Cardio Day',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  // ── MUSCLE BUILDING ──
+  {id:'muscle_5day', goal:'muscle', icon:'💪', name:'5-Day PPL + Arms',
+   desc:'Push/Pull/Legs split with dedicated arm day. High volume, progressive overload focus. Best for those whose primary goal is hypertrophy.',
+   days:5, frequency:'5×/week', equipment:'Full gym', level:'Intermediate–Advanced', duration:'16–24 weeks',
+   progressionModel:'double',
+   schedule:[
+     {day:'Mon',type:'training',name:'Push — Chest, Shoulders, Triceps',exercises:[
+       {name:'Barbell Bench Press',sets:4,reps:'6–8',rest:'3 min',note:'Primary push. Track every session.'},
+       {name:'Incline DB Press',sets:4,reps:'8–10',rest:'2 min',note:'Upper chest. Control down.'},
+       {name:'DB Shoulder Press',sets:4,reps:'8–10',rest:'2 min',note:'Full ROM. Lockout at top.'},
+       {name:'Cable Lateral Raise',sets:4,reps:'12–15',rest:'60s',note:'Side delts = shoulder width.'},
+       {name:'Cable Fly (Low to High)',sets:3,reps:'12–15',rest:'60s',note:'Upper chest stretch.'},
+       {name:'Overhead Tricep Extension',sets:3,reps:'10–12',rest:'60s',note:'Long head stretch.'},
+       {name:'Tricep Pushdown',sets:3,reps:'12–15',rest:'45s',note:'Pump finisher.'},
+     ]},
+     {day:'Tue',type:'training',name:'Pull — Back, Biceps, Rear Delts',exercises:[
+       {name:'Weighted Pull-Up',sets:4,reps:'6–8',rest:'2.5 min',note:'Lat width builder.'},
+       {name:'Barbell Row',sets:4,reps:'6–8',rest:'2.5 min',note:'Thickness. Row to belly.'},
+       {name:'Chest Supported Row',sets:3,reps:'10–12',rest:'2 min',note:'Removes lower back fatigue.'},
+       {name:'Face Pulls',sets:4,reps:'15–20',rest:'60s',note:'Rear delt and health.'},
+       {name:'Barbell Curl',sets:4,reps:'8–10',rest:'90s',note:'Strength-based curl.'},
+       {name:'Incline DB Curl',sets:3,reps:'10–12',rest:'60s',note:'Long head stretch.'},
+     ]},
+     {day:'Wed',type:'training',name:'Legs — Full',exercises:[
+       {name:'Barbell Back Squat',sets:5,reps:'6–8',rest:'3 min',note:'The most important leg exercise.'},
+       {name:'Romanian Deadlift',sets:4,reps:'8–10',rest:'2.5 min',note:'Hamstring and glute hinge.'},
+       {name:'Leg Press',sets:4,reps:'10–12',rest:'2 min',note:'Volume quad work.'},
+       {name:'Hip Thrust',sets:4,reps:'10–12',rest:'2 min',note:'Glute peak contraction.'},
+       {name:'Leg Extension',sets:3,reps:'12–15',rest:'60s',note:'Quad isolation pump.'},
+       {name:'Lying Leg Curl',sets:3,reps:'12–15',rest:'60s',note:'Hamstring isolation.'},
+       {name:'Calf Raises',sets:5,reps:'15–20',rest:'45s',note:'High frequency needed for calves.'},
+     ]},
+     {day:'Thu',type:'rest',name:'Rest or Light Cardio',exercises:[]},
+     {day:'Fri',type:'training',name:'Push B — Shoulders Emphasis',exercises:[
+       {name:'Overhead Press (Barbell)',sets:4,reps:'6–8',rest:'3 min',note:'Shoulder strength. Strict form.'},
+       {name:'Incline DB Press',sets:4,reps:'10–12',rest:'2 min',note:'Upper chest volume.'},
+       {name:'Machine Fly',sets:3,reps:'12–15',rest:'60s',note:'Chest isolation.'},
+       {name:'DB Lateral Raise',sets:5,reps:'15–20',rest:'45s',note:'5 sets — delts need volume.'},
+       {name:'Tricep Dips',sets:3,reps:'10–12',rest:'90s',note:'Bodyweight or weighted.'},
+     ]},
+     {day:'Sat',type:'training',name:'Arms + Rear Delts',exercises:[
+       {name:'EZ Bar Curl',sets:4,reps:'8–10',rest:'90s',note:'Bicep mass builder.'},
+       {name:'Hammer Curl',sets:3,reps:'10–12',rest:'60s',note:'Brachialis thickness.'},
+       {name:'Preacher Curl',sets:3,reps:'10–12',rest:'60s',note:'Long head isolation.'},
+       {name:'Skull Crushers',sets:4,reps:'8–10',rest:'90s',note:'Tricep mass.'},
+       {name:'Cable Tricep Pushdown',sets:3,reps:'12–15',rest:'60s',note:'Volume finisher.'},
+       {name:'Reverse Fly (Cable/DB)',sets:4,reps:'15–20',rest:'45s',note:'Rear delt. Light weight, feel it.'},
+     ]},
+     {day:'Sun',type:'rest',name:'Full Rest',exercises:[]},
+   ]},
+
+  // ── STRENGTH ──
+  {id:'strength_4day', goal:'strength', icon:'🏋️', name:'4-Day Powerbuilding',
+   desc:'Combines powerlifting movements (squat, bench, deadlift, OHP) with bodybuilding accessories. Build real strength AND size.',
+   days:4, frequency:'4×/week', equipment:'Full gym + barbell', level:'Intermediate–Advanced', duration:'12–16 weeks',
+   progressionModel:'wave',
+   schedule:[
+     {day:'Mon',type:'training',name:'Squat Day',exercises:[
+       {name:'Barbell Back Squat',sets:5,reps:'3–5',rest:'4 min',note:'Wave: W1=5s, W2=4s, W3=3s, W4=deload.'},
+       {name:'Paused Squat',sets:3,reps:'3',rest:'3 min',note:'2-second pause at bottom.'},
+       {name:'Leg Press',sets:4,reps:'8–10',rest:'2 min',note:'Accessory volume.'},
+       {name:'Leg Extension',sets:3,reps:'12–15',rest:'90s',note:'Quad pump.'},
+       {name:'Seated Leg Curl',sets:3,reps:'12–15',rest:'90s',note:'Hamstring pump.'},
+       {name:'Calf Raises',sets:4,reps:'12–15',rest:'60s',note:'Full ROM.'},
+     ]},
+     {day:'Tue',type:'training',name:'Bench Day',exercises:[
+       {name:'Barbell Bench Press',sets:5,reps:'3–5',rest:'4 min',note:'Wave loading. 90% effort each set.'},
+       {name:'Close Grip Bench Press',sets:3,reps:'6–8',rest:'3 min',note:'Tricep strength + chest.'},
+       {name:'Incline DB Press',sets:4,reps:'8–10',rest:'2 min',note:'Upper chest accessory.'},
+       {name:'Face Pulls',sets:4,reps:'20',rest:'60s',note:'Shoulder health. Every session.'},
+       {name:'DB Lateral Raise',sets:4,reps:'12–15',rest:'60s',note:'Delt volume.'},
+       {name:'Tricep Pushdown',sets:4,reps:'10–12',rest:'60s',note:'Tricep volume.'},
+     ]},
+     {day:'Thu',type:'training',name:'Deadlift Day',exercises:[
+       {name:'Conventional Deadlift',sets:5,reps:'2–4',rest:'4 min',note:'King of all lifts. Perfect form always.'},
+       {name:'Romanian Deadlift',sets:4,reps:'6–8',rest:'2.5 min',note:'Hamstring accessory.'},
+       {name:'Weighted Pull-Up',sets:4,reps:'5–8',rest:'2.5 min',note:'Back strength.'},
+       {name:'Barbell Row',sets:4,reps:'6–8',rest:'2 min',note:'Upper back volume.'},
+       {name:'Face Pulls',sets:3,reps:'20',rest:'60s',note:'Non-negotiable.'},
+     ]},
+     {day:'Fri',type:'training',name:'OHP Day',exercises:[
+       {name:'Overhead Press (Barbell)',sets:5,reps:'3–5',rest:'4 min',note:'Strict press. No leg drive.'},
+       {name:'Push Press',sets:3,reps:'4–6',rest:'3 min',note:'Use leg drive for overload.'},
+       {name:'Lat Pulldown',sets:4,reps:'8–10',rest:'2 min',note:'Back volume on press day.'},
+       {name:'DB Shoulder Press',sets:4,reps:'10–12',rest:'90s',note:'Volume work.'},
+       {name:'Barbell Curl',sets:4,reps:'8–10',rest:'60s',note:'Arm strength.'},
+       {name:'Skull Crushers',sets:4,reps:'8–10',rest:'60s',note:'Tricep mass.'},
+     ]},
+     {day:'Wed',type:'cardio',name:'Cardio / Recovery',exercises:[]},
+     {day:'Sat',type:'rest',name:'Rest',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  // ── BEGINNER ──
+  {id:'beginner_3day', goal:'beginner', icon:'🌱', name:'3-Day Starting Strength',
+   desc:'The proven beginner programme. Full body 3×/week, linear progression, master the compound lifts. Perfect first 3–6 months.',
+   days:3, frequency:'3×/week', equipment:'Barbell + rack', level:'Complete beginner', duration:'3–6 months',
+   progressionModel:'linear',
+   schedule:[
+     {day:'Mon',type:'training',name:'Session A',exercises:[
+       {name:'Barbell Back Squat',sets:3,reps:'5',rest:'3 min',note:'Add 2.5kg every single session. Non-negotiable.'},
+       {name:'Barbell Bench Press',sets:3,reps:'5',rest:'3 min',note:'Add 2.5kg every session.'},
+       {name:'Barbell Bent-Over Row',sets:3,reps:'5',rest:'3 min',note:'Add 2.5kg every session.'},
+     ]},
+     {day:'Wed',type:'training',name:'Session B',exercises:[
+       {name:'Barbell Back Squat',sets:3,reps:'5',rest:'3 min',note:'Every session. Linear add.'},
+       {name:'Overhead Press (Barbell)',sets:3,reps:'5',rest:'3 min',note:'Strict. No leg drive.'},
+       {name:'Conventional Deadlift',sets:1,reps:'5',rest:'4 min',note:'1 heavy set. Add 5kg every session.'},
+     ]},
+     {day:'Fri',type:'training',name:'Session A (repeat)',exercises:[
+       {name:'Barbell Back Squat',sets:3,reps:'5',rest:'3 min',note:'Linear add from Wednesday.'},
+       {name:'Barbell Bench Press',sets:3,reps:'5',rest:'3 min',note:'Alternates with OHP each session.'},
+       {name:'Barbell Bent-Over Row',sets:3,reps:'5',rest:'3 min',note:'Linear add.'},
+     ]},
+     {day:'Tue',type:'rest',name:'Rest',exercises:[]},
+     {day:'Thu',type:'rest',name:'Rest',exercises:[]},
+     {day:'Sat',type:'rest',name:'Rest',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  {id:'beginner_fb', goal:'beginner', icon:'🌱', name:'3-Day Beginner Full Body (Dumbbell)',
+   desc:'For beginners with limited equipment or gym anxiety. Dumbbells and machines only, no barbell required. Build confidence and base fitness.',
+   days:3, frequency:'3×/week', equipment:'Dumbbells + machines', level:'Complete beginner', duration:'8–16 weeks',
+   progressionModel:'linear',
+   schedule:[
+     {day:'Mon',type:'training',name:'Full Body A',exercises:[
+       {name:'Goblet Squat',sets:3,reps:'10–12',rest:'2 min',note:'Master this before barbell squat.'},
+       {name:'DB Romanian Deadlift',sets:3,reps:'10–12',rest:'2 min',note:'Feel the hamstrings.'},
+       {name:'DB Bench Press',sets:3,reps:'10–12',rest:'90s',note:'Control the descent.'},
+       {name:'DB Row (each arm)',sets:3,reps:'10–12',rest:'90s',note:'Elbow drives back.'},
+       {name:'DB Shoulder Press',sets:3,reps:'10–12',rest:'90s',note:'Full ROM.'},
+       {name:'Plank',sets:3,reps:'30 sec',rest:'60s',note:'Core every session.'},
+     ]},
+     {day:'Wed',type:'training',name:'Full Body B',exercises:[
+       {name:'Leg Press (Machine)',sets:3,reps:'12',rest:'2 min',note:'Quad focus.'},
+       {name:'Hip Thrust (Bodyweight)',sets:3,reps:'15',rest:'90s',note:'Glute activation.'},
+       {name:'Lat Pulldown',sets:3,reps:'10–12',rest:'90s',note:'Pull to chest.'},
+       {name:'Push-Ups',sets:3,reps:'8–12',rest:'60s',note:'Incline if needed.'},
+       {name:'DB Lateral Raise',sets:3,reps:'12–15',rest:'60s',note:'Light weight.'},
+       {name:'Dead Bug',sets:3,reps:'8 each side',rest:'60s',note:'Core stability.'},
+     ]},
+     {day:'Fri',type:'training',name:'Full Body C',exercises:[
+       {name:'DB Split Squat',sets:3,reps:'10 each',rest:'90s',note:'Bodyweight first.'},
+       {name:'DB RDL',sets:3,reps:'12',rest:'90s',note:'Same as Monday but heavier.'},
+       {name:'Seated Cable Row',sets:3,reps:'12',rest:'90s',note:'Machine is fine.'},
+       {name:'Incline DB Press',sets:3,reps:'12',rest:'90s',note:'Upper chest focus.'},
+       {name:'Bicep Curl',sets:3,reps:'12',rest:'60s',note:'Arm work.'},
+       {name:'Tricep Pushdown',sets:3,reps:'12',rest:'60s',note:'Arm work.'},
+     ]},
+     {day:'Tue',type:'rest',name:'Rest',exercises:[]},
+     {day:'Thu',type:'rest',name:'Rest',exercises:[]},
+     {day:'Sat',type:'cardio',name:'Light Cardio (optional)',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  // ── ATHLETIC ──
+  {id:'athletic_4day', goal:'athletic', icon:'⚡', name:'4-Day Athletic Performance',
+   desc:'Built for sport. Power, explosiveness and conditioning alongside strength. Olympic lifts, plyometrics, speed work.',
+   days:4, frequency:'4×/week', equipment:'Full gym', level:'Intermediate', duration:'8–12 weeks',
+   progressionModel:'wave',
+   schedule:[
+     {day:'Mon',type:'training',name:'Power + Lower',exercises:[
+       {name:'Power Clean (or DB Hang Clean)',sets:5,reps:'3',rest:'3 min',note:'Explosive. Perfect form. Weight is secondary.'},
+       {name:'Box Jump',sets:4,reps:'5',rest:'2 min',note:'Max height. Land softly.'},
+       {name:'Barbell Back Squat',sets:4,reps:'4–6',rest:'3 min',note:'Heavy. Power base.'},
+       {name:'Romanian Deadlift',sets:3,reps:'6–8',rest:'2 min',note:'Posterior chain strength.'},
+       {name:'Single Leg Press',sets:3,reps:'10 each',rest:'90s',note:'Unilateral strength for sport.'},
+     ]},
+     {day:'Tue',type:'training',name:'Speed + Upper',exercises:[
+       {name:'Medicine Ball Chest Pass',sets:4,reps:'8',rest:'90s',note:'Explosive upper body. Throw hard.'},
+       {name:'Barbell Bench Press',sets:4,reps:'4–6',rest:'3 min',note:'Upper body strength.'},
+       {name:'Weighted Pull-Up',sets:4,reps:'5–8',rest:'2.5 min',note:'Back strength.'},
+       {name:'DB Shoulder Press',sets:3,reps:'8–10',rest:'2 min',note:'Overhead strength.'},
+       {name:'Face Pulls',sets:4,reps:'20',rest:'60s',note:'Shoulder health. Always.'},
+       {name:'Farmer Carries',sets:4,reps:'30m',rest:'90s',note:'Grip, core, conditioning.'},
+     ]},
+     {day:'Thu',type:'training',name:'Strength + Posterior Chain',exercises:[
+       {name:'Conventional Deadlift',sets:5,reps:'3–5',rest:'4 min',note:'Primary strength movement.'},
+       {name:'Hip Thrust',sets:4,reps:'8–10',rest:'2 min',note:'Glute power for acceleration.'},
+       {name:'Nordic Curl',sets:4,reps:'5–8',rest:'2.5 min',note:'Hamstring injury prevention essential for athletes.'},
+       {name:'Bulgarian Split Squat',sets:3,reps:'8 each',rest:'2 min',note:'Sport-specific unilateral.'},
+       {name:'Barbell Row',sets:4,reps:'6–8',rest:'2 min',note:'Upper back for posture.'},
+     ]},
+     {day:'Fri',type:'training',name:'Conditioning + Upper',exercises:[
+       {name:'Battle Ropes',sets:5,reps:'30 sec',rest:'30s',note:'Anaerobic conditioning.'},
+       {name:'Overhead Press',sets:4,reps:'5–8',rest:'2.5 min',note:'Full body strength.'},
+       {name:'Lat Pulldown',sets:4,reps:'8–10',rest:'2 min',note:'Back width.'},
+       {name:'Push-Up Variations',sets:4,reps:'15–20',rest:'60s',note:'Explosive or weighted.'},
+       {name:'Sled Push',sets:5,reps:'20m',rest:'90s',note:'Drive. Stay low. Power.'},
+     ]},
+     {day:'Wed',type:'cardio',name:'Sprint / Agility Day',exercises:[]},
+     {day:'Sat',type:'recovery',name:'Active Recovery',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  // ── HOME ──
+  {id:'home_3day', goal:'home', icon:'🏠', name:'3-Day Home Bodyweight',
+   desc:'Zero equipment needed. Progressive overload through harder variations, added reps, and tempo. Can be done anywhere.',
+   days:3, frequency:'3×/week', equipment:'None (optional: resistance bands)', level:'All levels', duration:'Ongoing',
+   progressionModel:'double',
+   schedule:[
+     {day:'Mon',type:'training',name:'Push + Core',exercises:[
+       {name:'Push-Ups',sets:4,reps:'8–15',rest:'90s',note:'Progress: incline → flat → decline → archer → one-arm.'},
+       {name:'Pike Push-Ups',sets:3,reps:'8–12',rest:'90s',note:'Shoulder focus.'},
+       {name:'Tricep Dips (Chair)',sets:3,reps:'10–15',rest:'60s',note:'Elevate feet to progress.'},
+       {name:'Plank',sets:3,reps:'45 sec',rest:'60s',note:'Perfect form. Progress to 90s.'},
+       {name:'Dead Bug',sets:3,reps:'10 each',rest:'60s',note:'Slow and controlled.'},
+       {name:'Hollow Hold',sets:3,reps:'20 sec',rest:'60s',note:'Core compression.'},
+     ]},
+     {day:'Wed',type:'training',name:'Pull + Legs',exercises:[
+       {name:'Bodyweight Squats',sets:4,reps:'15–20',rest:'90s',note:'Progress: BW → pause → jump → pistol.'},
+       {name:'Glute Bridge',sets:4,reps:'15–20',rest:'60s',note:'Progress to single leg.'},
+       {name:'Inverted Row (table/bar)',sets:4,reps:'8–12',rest:'90s',note:'Lower body = harder.'},
+       {name:'Reverse Lunge',sets:3,reps:'12 each',rest:'60s',note:'Control descent.'},
+       {name:'Superman',sets:3,reps:'12',rest:'60s',note:'Lower back extension.'},
+     ]},
+     {day:'Fri',type:'training',name:'Full Body AMRAP',exercises:[
+       {name:'Burpees',sets:4,reps:'10',rest:'90s',note:'Full body explosive.'},
+       {name:'Jump Squats',sets:4,reps:'10',rest:'90s',note:'Explosive lower.'},
+       {name:'Push-Up to T',sets:3,reps:'8 each',rest:'60s',note:'Rotation for core.'},
+       {name:'Mountain Climbers',sets:3,reps:'30 sec',rest:'60s',note:'Cardio + core.'},
+       {name:'Single Leg Glute Bridge',sets:3,reps:'15 each',rest:'60s',note:'Glute isolation.'},
+     ]},
+     {day:'Tue',type:'cardio',name:'Walk / Jog',exercises:[]},
+     {day:'Thu',type:'rest',name:'Rest',exercises:[]},
+     {day:'Sat',type:'cardio',name:'Active Outdoors',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+
+  // ── KIRSTY DEFAULT ──
+  {id:'kirsty_recomp', goal:'recomp', icon:'🔄', name:'3-Day Female Recomp', defaultFor:['kirsty'],
+   desc:'Designed for women focusing on body recomposition. Glute and hamstring emphasis, progressive loading, sustainable 3-day structure.',
+   days:3, frequency:'3×/week', equipment:'Full gym', level:'Beginner–Intermediate', duration:'16–24 weeks',
+   progressionModel:'double',
+   schedule:[
+     {day:'Mon',type:'training',name:'Full Body A — Strength Focus',exercises:[
+       {name:'Goblet Squat',sets:4,reps:'8–10',rest:'2 min',note:'Progress to barbell squat over weeks 4–6.'},
+       {name:'DB Romanian Deadlift',sets:3,reps:'10–12',rest:'2 min',note:'Hinge. Feel hamstrings.'},
+       {name:'Seated DB Shoulder Press',sets:3,reps:'10–12',rest:'90s',note:'Control down.'},
+       {name:'DB Row (each arm)',sets:3,reps:'10–12',rest:'90s',note:'Elbow drives back.'},
+       {name:'Push-Ups',sets:3,reps:'8–12',rest:'90s',note:'Progress to flat, then decline.'},
+       {name:'Plank',sets:3,reps:'30–45 sec',rest:'60s',note:'Core every session.'},
+     ]},
+     {day:'Wed',type:'cardio',name:'Cardio — Zone 2',exercises:[]},
+     {day:'Thu',type:'training',name:'Full Body B — Hypertrophy Focus',exercises:[
+       {name:'Leg Press (Machine)',sets:4,reps:'12–15',rest:'2 min',note:'Full depth.'},
+       {name:'Hip Thrust (BB or BW)',sets:3,reps:'12–15',rest:'90s',note:'Glute squeeze at top.'},
+       {name:'Lat Pulldown',sets:3,reps:'10–12',rest:'2 min',note:'Pull elbows to ribcage.'},
+       {name:'Chest Press (Machine)',sets:3,reps:'12–15',rest:'90s',note:'45° elbow angle.'},
+       {name:'DB Lateral Raise',sets:3,reps:'12–15',rest:'60s',note:'Shoulder width.'},
+       {name:'Leg Curl (Machine)',sets:3,reps:'12–15',rest:'90s',note:'Slow eccentric.'},
+       {name:'Dead Bug',sets:3,reps:'10 each',rest:'60s',note:'Core stability.'},
+     ]},
+     {day:'Sat',type:'training',name:'Full Body C — Strength + Finisher',exercises:[
+       {name:'Barbell Sumo Deadlift',sets:3,reps:'8–10',rest:'2.5 min',note:'Wide stance. Glutes and inner thighs.'},
+       {name:'Walking Lunges',sets:3,reps:'12 each',rest:'2 min',note:'Add DBs when ready.'},
+       {name:'Seated Cable Row',sets:3,reps:'10–12',rest:'90s',note:'Back volume.'},
+       {name:'Tricep Pushdown',sets:3,reps:'12–15',rest:'60s',note:'Arm tone.'},
+       {name:'Bicep Curl',sets:2,reps:'12–15',rest:'60s',note:'Arm tone.'},
+       {name:'CARDIO FINISHER: Bike/Row',sets:1,reps:'10 min',rest:'—',note:'Moderate pace — elevate HR to finish.'},
+     ]},
+     {day:'Tue',type:'rest',name:'Rest',exercises:[]},
+     {day:'Fri',type:'rest',name:'Rest',exercises:[]},
+     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
+   ]},
+];
+
+const PROGRESSION_MODELS = {
+  double: {
+    id:'double', name:'Double Progression', recommended:true,
+    tagline:'Best for most people — recomp, fat loss, intermediate lifters',
+    desc:'Build reps within a given range first, then increase weight once you hit the top of the range across all sets. Safe, sustainable and proven.',
+    rule:'📋 How it works:\n• Set a rep range e.g. 8–12 reps\n• Session 1: 3×8 @ 60kg\n• Session 2: 3×10 @ 60kg\n• Session 3: 3×12 @ 60kg ← hit top of range!\n• Session 4: 3×8 @ 62.5kg ← add 2.5kg, reset reps\n• Repeat. Progress guaranteed.',
+    increments:{upper:2.5, lower:5, small:1.25}
+  },
+  linear: {
+    id:'linear', name:'Linear Progression',
+    tagline:'Best for complete beginners — adds weight every single session',
+    desc:'Add a fixed amount of weight every session. Works brilliantly for the first 3–6 months when your neuromuscular adaptation allows rapid gains.',
+    rule:'📋 How it works:\n• Pick a starting weight (lighter than you think)\n• Add 2.5kg upper body / 5kg lower body every session\n• When you fail 3 sessions in a row, deload 10% and rebuild\n• Ride this as long as possible — beginners can run it for months.',
+    increments:{upper:2.5, lower:5, small:1.25}
+  },
+  wave: {
+    id:'wave', name:'Wave Loading',
+    tagline:'Best for intermediate–advanced lifters who have stalled on double progression',
+    desc:'3 weeks of building intensity, followed by 1 planned deload week. Manages accumulated fatigue and drives long-term progress beyond the beginner phase.',
+    rule:'📋 How it works:\n• Week 1: 4×8 @ 70% 1RM\n• Week 2: 4×6 @ 75% 1RM\n• Week 3: 4×4 @ 80% 1RM\n• Week 4: 3×8 @ 60% 1RM (deload)\n• Next wave: start heavier than previous Wave Week 1\n• Progress across waves, not within them.',
+    increments:{upper:2.5, lower:5, small:1.25}
+  }
+};
+
+const GS_QUESTIONS = [
+  {
+    q:'What is your main goal right now?',
+    key:'goal',
+    options:[
+      {id:'recomp', icon:'🔄', label:'Body recomposition', desc:'Lose fat and gain muscle simultaneously'},
+      {id:'fatloss', icon:'🔥', label:'Lose fat', desc:'Primary focus on fat loss, maintain muscle'},
+      {id:'muscle', icon:'💪', label:'Build muscle', desc:'Maximise hypertrophy and size'},
+      {id:'strength', icon:'🏋️', label:'Get stronger', desc:'Improve your big lifts — squat, bench, deadlift'},
+      {id:'beginner', icon:'🌱', label:'Learn the basics', desc:'New to lifting or returning after a long break'},
+      {id:'athletic', icon:'⚡', label:'Athletic performance', desc:'Sport-specific strength, power and conditioning'},
+      {id:'home', icon:'🏠', label:'Train at home', desc:'Limited equipment, training from home'},
+    ]
+  },
+  {
+    q:'How many days per week can you realistically train?',
+    key:'days',
+    options:[
+      {id:'2', icon:'2️⃣', label:'2 days', desc:'Time is tight — make them count'},
+      {id:'3', icon:'3️⃣', label:'3 days', desc:'The sweet spot for most people'},
+      {id:'4', icon:'4️⃣', label:'4 days', desc:'Good balance of volume and recovery'},
+      {id:'5', icon:'5️⃣', label:'5+ days', desc:'High commitment, high results'},
+    ]
+  },
+  {
+    q:'How would you describe your training experience?',
+    key:'level',
+    options:[
+      {id:'beginner', icon:'🌱', label:'Beginner', desc:'Under 1 year lifting, still learning'},
+      {id:'intermediate', icon:'📈', label:'Intermediate', desc:'1–3 years, good form, some progress stalled'},
+      {id:'advanced', icon:'🔥', label:'Advanced', desc:'3+ years, understand periodisation'},
+    ]
+  }
+];
+
+const CPB_STEPS = ['Goal', 'Schedule', 'Exercises', 'Progression', 'Review'];
+
+const GOAL_LABELS = {
+  recomp:   {label:'Body Recomposition', icon:'🔄', calAdvice:'A small deficit (200–300 kcal) is intentional. Protein drives the recomp — protect it at all costs.'},
+  fatloss:  {label:'Fat Loss',           icon:'🔥', calAdvice:'Stay in your deficit consistently. If weight stalls for 2+ weeks, drop another 100–150 kcal or add a cardio session.'},
+  muscle:   {label:'Muscle Building',    icon:'💪', calAdvice:'A small surplus (200–300 kcal) accelerates growth. If you\'re gaining more than 0.5kg/week, slightly reduce calories.'},
+  strength: {label:'Strength',           icon:'🏋️', calAdvice:'Calories support strength. Don\'t go into a significant deficit — you need fuel to move heavy weight.'},
+  beginner: {label:'Learning the Basics',icon:'🌱', calAdvice:'Focus on protein and consistency first. Calorie precision matters less at this stage than building the habit.'},
+  athletic: {label:'Athletic Performance',icon:'⚡', calAdvice:'Performance needs fuel. Eat around maintenance — undereating kills speed, power and recovery.'},
+  home:     {label:'Home Training',      icon:'🏠', calAdvice:'Same principles apply — protein first, then overall calories. Consistency beats perfection.'},
+};
+
+const NG_STEPS = ['Goal', 'Date & Stats', '1RM Check', 'Plan', 'Nutrition'];
+
+const FIBRE_KEYWORDS = [
+  {kw:'oats',g:3},{kw:'wholegrain',g:3},{kw:'broccoli',g:3},{kw:'spinach',g:2},
+  {kw:'banana',g:2},{kw:'apple',g:2},{kw:'lentil',g:5},{kw:'bean',g:5},
+  {kw:'pea',g:4},{kw:'chickpea',g:5},{kw:'brown rice',g:2},{kw:'basmati rice',g:1},
+  {kw:'pasta',g:2},{kw:'wholemeal',g:3},{kw:'sweet potato',g:3},{kw:'potato',g:2},
+  {kw:'carrot',g:2},{kw:'pepper',g:1},{kw:'tomato',g:1},{kw:'cucumber',g:1},
+  {kw:'salad',g:2},{kw:'green bean',g:2},{kw:'mushroom',g:1},{kw:'onion',g:1},
+  {kw:'avocado',g:4},{kw:'almond',g:2},{kw:'walnut',g:2},{kw:'cashew',g:1},
+  {kw:'hazelnut',g:2},{kw:'brazil nut',g:2},{kw:'mixed nut',g:2},{kw:'greek yoghurt',g:0},
+  {kw:'berry',g:2},{kw:'raspberry',g:3},{kw:'strawberry',g:2},{kw:'blueberry',g:2},
+];
+
 // ── Dynamic macro system ──────────────────────────────────────────────────────
 // Returns active macros for a profile — custom if set, else PROFILES defaults
 function getProfileMacros(profile) {
@@ -1744,426 +2257,6 @@ function load() {
   } catch(e){}
 }
 
-// ============ PROFILE CONSTANTS ============
-const PROFILE_SLOTS = ['max', 'kirsty'];
-const PROFILE_EMOJIS = ['🏋️','🏃','🧗','🚴','🤸','🏊','⚽','🎯','💪','🔥'];
-const PROFILE_COLORS = [
-  {label:'Green',  color:'#2D6A4F', light:'#52B788', theme:'max-theme',    border:'var(--max)'},
-  {label:'Purple', color:'#5E4B8B', light:'#9B84D4', theme:'kirsty-theme', border:'var(--kirsty)'},
-  {label:'Blue',   color:'#1D6FA4', light:'#56B4E9', theme:'max-theme',    border:'#56B4E9'},
-  {label:'Red',    color:'#9B2226', light:'#E63946', theme:'kirsty-theme', border:'#E63946'},
-];
-
-// ============ INIT ============
-window.addEventListener('DOMContentLoaded', () => {
-  load();
-  // Restore any onboarded profile data into PROFILES
-  PROFILE_SLOTS.forEach(slot => {
-    const prefs = getPrefs(slot);
-    if (prefs.onboarded) {
-      const col = PROFILE_COLORS[prefs.userColorIdx ?? (slot === 'max' ? 0 : 1)] || PROFILE_COLORS[0];
-      PROFILES[slot].name       = prefs.userName  || PROFILES[slot].name;
-      PROFILES[slot].emoji      = prefs.userEmoji || PROFILES[slot].emoji;
-      PROFILES[slot].color      = col.color;
-      PROFILES[slot].lightColor = col.light;
-      PROFILES[slot].theme      = col.theme;
-      PROFILES[slot].height     = prefs.userHeight || PROFILES[slot].height;
-      PROFILES[slot].age        = prefs.userAge    || PROFILES[slot].age;
-      PROFILES[slot].sex        = prefs.userSex    || PROFILES[slot].sex;
-      if (prefs.goalStartWeight)  PROFILES[slot].currentWeight = prefs.goalStartWeight;
-      if (prefs.goalTargetWeight) PROFILES[slot].targetWeight  = [prefs.goalTargetWeight, prefs.goalTargetWeight];
-    }
-  });
-  setTimeout(() => {
-    document.getElementById('splash').classList.add('hidden');
-    document.getElementById('profile-select').style.display = 'flex';
-    renderProfileCards();
-  }, 1200);
-  updateHeaderDate();
-});
-
-
-function renderProfileCards() {
-  const container = document.getElementById('profile-cards-container');
-  const subtitle  = document.getElementById('profile-select-subtitle');
-  if (!container) return;
-
-  const hasAny = PROFILE_SLOTS.some(p => getPrefs(p).onboarded);
-  subtitle.textContent = hasAny ? 'Who\'s training today?' : 'Welcome — create your profile to begin';
-
-  container.innerHTML = PROFILE_SLOTS.map(slot => {
-    const prefs = getPrefs(slot);
-    const p     = PROFILES[slot];
-    const done  = prefs.onboarded;
-    if (done) {
-      // Show populated tile
-      const logs = weightLogs[slot] || [];
-      const currentW = logs.slice(-1)[0]?.weight || prefs.goalStartWeight || '—';
-      const targetW  = prefs.goalTargetWeight || '—';
-      const goalInfo = prefs.goal ? GOAL_LABELS[prefs.goal] : null;
-      const age  = prefs.userAge  || '—';
-      const ht   = prefs.userHeight ? prefs.userHeight + 'cm' : '—';
-      const borderStyle = `border-color:${p.color}`;
-      return `
-        <div class="profile-card" style="${borderStyle}" onclick="selectProfile('${slot}')">
-          <div class="profile-avatar" style="background:${p.color}22;font-size:1.8rem">${p.emoji}</div>
-          <div class="profile-name" style="color:${p.lightColor}">${p.name}</div>
-          <div class="profile-stats">
-            ${age !== '—' ? age + ' · ' : ''}${ht !== '—' ? ht + ' · ' : ''}${currentW}kg<br>
-            ${goalInfo ? goalInfo.icon + ' ' + goalInfo.label : 'Tap to continue'}
-            ${targetW !== '—' ? '<br>Target: ' + targetW + 'kg' : ''}
-          </div>
-        </div>`;
-    } else {
-      // Empty slot — create new user
-      return `
-        <div class="profile-card" style="border-style:dashed;border-color:var(--border)" onclick="startOnboarding('${slot}')">
-          <div class="profile-avatar" style="background:var(--surface2);font-size:1.6rem">＋</div>
-          <div class="profile-name" style="color:var(--muted)">New User</div>
-          <div class="profile-stats">Tap to create profile</div>
-        </div>`;
-    }
-  }).join('');
-}
-
-// ============ ONBOARDING WIZARD ============
-let obSlot   = null;  // which profile slot being set up
-let obStep   = 0;
-let obData   = {};
-const OB_STEPS = ['Your Details', 'Goal', 'Stats', 'Plan', 'Nutrition'];
-
-function startOnboarding(slot) {
-  obSlot = slot;
-  obStep = 0;
-  obData = {
-    name: '', emoji: PROFILE_EMOJIS[0], colorIdx: slot === 'max' ? 0 : 1,
-    age: '', height: '', sex: slot === 'max' ? 'male' : 'female',
-    goal: 'recomp', startDate: new Date().toISOString().split('T')[0],
-    currentWeight: '', targetWeight: '', mealCount: 5,
-    customCal: null, customProt: null, customCarbs: null, customFat: null,
-    genMealPlan: null, selectedPlanId: null, planChoice: 'switch',
-  };
-  document.getElementById('ob-title').textContent = 'Create Profile';
-  renderOBSteps();
-  renderOBStep();
-  document.getElementById('onboarding-modal').classList.add('open');
-}
-
-function closeOnboarding() {
-  document.getElementById('onboarding-modal').classList.remove('open');
-}
-
-function renderOBSteps() {
-  document.getElementById('ob-steps').innerHTML = OB_STEPS.map((s,i) =>
-    `<div class="cpb-step ${i===obStep?'active':i<obStep?'done':''}">${i<obStep?'✓ ':''}${s}</div>`
-  ).join('');
-}
-
-function renderOBStep() {
-  renderOBSteps();
-  const el = document.getElementById('ob-body');
-
-  // ── Step 0: Personal details ──
-  if (obStep === 0) {
-    const col = PROFILE_COLORS[obData.colorIdx];
-    el.innerHTML = `
-      <div class="cpb-question">Tell us about yourself</div>
-      <div class="cpb-subtext">This personalises your macros, progression and recommendations.</div>
-
-      <div style="margin-bottom:14px">
-        <div class="pref-label">Your name</div>
-        <input type="text" class="recipe-input" id="ob-name" placeholder="e.g. Max" value="${obData.name}"
-          oninput="obData.name=this.value" style="font-size:1rem;padding:10px 12px">
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
-        <div>
-          <div class="pref-label">Age</div>
-          <input type="number" class="recipe-input" id="ob-age" placeholder="30" value="${obData.age}"
-            oninput="obData.age=this.value" min="16" max="80">
-        </div>
-        <div>
-          <div class="pref-label">Height (cm)</div>
-          <input type="number" class="recipe-input" id="ob-height" placeholder="178" value="${obData.height}"
-            oninput="obData.height=this.value" min="140" max="220">
-        </div>
-        <div>
-          <div class="pref-label">Sex</div>
-          <select class="recipe-input" id="ob-sex" onchange="obData.sex=this.value" style="width:100%">
-            <option value="male"   ${obData.sex==='male'  ?'selected':''}>Male</option>
-            <option value="female" ${obData.sex==='female'?'selected':''}>Female</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="margin-bottom:14px">
-        <div class="pref-label">Pick your emoji</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-          ${PROFILE_EMOJIS.map(e => `
-            <div onclick="obData.emoji='${e}';renderOBStep()"
-              style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;border:2px solid ${obData.emoji===e?'var(--active)':'var(--border)'};background:${obData.emoji===e?'rgba(82,183,136,0.15)':'var(--surface2)'}">
-              ${e}
-            </div>`).join('')}
-        </div>
-      </div>
-
-      <div style="margin-bottom:16px">
-        <div class="pref-label">Profile colour</div>
-        <div style="display:flex;gap:8px;margin-top:6px">
-          ${PROFILE_COLORS.map((c,i) => `
-            <div onclick="obData.colorIdx=${i};renderOBStep()"
-              style="width:36px;height:36px;border-radius:50%;background:${c.color};cursor:pointer;border:3px solid ${obData.colorIdx===i?'var(--text)':'transparent'};transition:all .15s">
-            </div>`).join('')}
-        </div>
-      </div>
-
-      <div class="cpb-nav">
-        <button class="cpb-next-btn" onclick="obValidateStep0()">Next →</button>
-      </div>
-    `;
-
-  // ── Step 1: Goal ──
-  } else if (obStep === 1) {
-    el.innerHTML = `
-      <div class="cpb-question">What's your main goal?</div>
-      <div class="cpb-subtext">This drives your plan, progression model and calorie targets.</div>
-      ${Object.entries(GOAL_LABELS).map(([id, g]) => `
-        <div class="cpb-option ${obData.goal===id?'selected':''}" onclick="obData.goal='${id}';renderOBStep()">
-          <div class="cpb-option-label">${g.icon} ${g.label}</div>
-        </div>`).join('')}
-      <div class="cpb-nav">
-        <button class="cpb-back-btn" onclick="obStep=0;renderOBStep()">← Back</button>
-        <button class="cpb-next-btn" onclick="obStep=2;renderOBStep()">Next →</button>
-      </div>
-    `;
-
-  // ── Step 2: Stats ──
-  } else if (obStep === 2) {
-    const today = new Date().toISOString().split('T')[0];
-    el.innerHTML = `
-      <div class="cpb-question">Your starting stats</div>
-      <div class="cpb-subtext">Used to calculate your TDEE and personalise your targets.</div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <div>
-          <div class="pref-label">Current weight (kg)</div>
-          <input type="number" class="recipe-input" id="ob-cw" placeholder="e.g. 92" value="${obData.currentWeight}"
-            oninput="obData.currentWeight=this.value" step="0.1">
-        </div>
-        <div>
-          <div class="pref-label">Target weight (kg)</div>
-          <input type="number" class="recipe-input" id="ob-tw" placeholder="e.g. 82" value="${obData.targetWeight}"
-            oninput="obData.targetWeight=this.value" step="0.1">
-        </div>
-      </div>
-
-      <div style="margin-bottom:14px">
-        <div class="pref-label" style="margin-bottom:6px">📅 Goal start date</div>
-        <input type="date" class="date-input" id="ob-start-date"
-          value="${obData.startDate || today}" min="2024-01-01" max="2030-12-31"
-          style="width:100%;font-size:0.95rem;padding:10px 12px"
-          onchange="obData.startDate=this.value" oninput="obData.startDate=this.value">
-      </div>
-
-      <div class="cpb-nav">
-        <button class="cpb-back-btn" onclick="obStep=1;renderOBStep()">← Back</button>
-        <button class="cpb-next-btn" onclick="obValidateStep2()">Next →</button>
-      </div>
-    `;
-
-  // ── Step 3: Plan recommendation ──
-  } else if (obStep === 3) {
-    const goal = obData.goal;
-    const suggestedPlan = PLAN_LIBRARY.find(p => p.goal === goal);
-    const recModel = goal === 'beginner' ? 'linear' : goal === 'strength' ? 'wave' : 'double';
-    obData.selectedPlanId = suggestedPlan?.id || '';
-    obData._recModel = recModel;
-
-    el.innerHTML = `
-      <div class="cpb-question">Your recommended plan</div>
-      <div class="cpb-subtext">Based on <b>${GOAL_LABELS[goal].icon} ${GOAL_LABELS[goal].label}</b></div>
-
-      ${suggestedPlan ? `
-        <div class="ng-plan-option selected" style="margin-bottom:12px">
-          <div class="plan-icon">${suggestedPlan.icon}</div>
-          <div class="plan-info">
-            <div class="plan-name">${suggestedPlan.name}</div>
-            <div class="plan-desc">${suggestedPlan.frequency} · ${suggestedPlan.level}</div>
-          </div>
-        </div>` : ''}
-
-      <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--active);border-radius:8px;padding:10px 12px;margin-bottom:16px">
-        <div style="font-size:0.82rem;font-weight:700">📈 ${PROGRESSION_MODELS[recModel].name}</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">${PROGRESSION_MODELS[recModel].tagline}</div>
-      </div>
-
-      <div class="cpb-nav">
-        <button class="cpb-back-btn" onclick="obStep=2;renderOBStep()">← Back</button>
-        <button class="cpb-next-btn" onclick="obStep=4;obData.customCal=null;renderOBStep()">Next →</button>
-      </div>
-      <button onclick="obData.planChoice='browse';obStep=4;obData.customCal=null;renderOBStep()"
-        style="width:100%;padding:10px;border-radius:10px;font-size:0.82rem;color:var(--active);background:transparent;border:1px solid var(--active);margin-top:6px;cursor:pointer">
-        Browse all plans →
-      </button>
-    `;
-
-  // ── Step 4: Nutrition recalibration ──
-  } else if (obStep === 4) {
-    const weight  = parseFloat(obData.currentWeight) || 80;
-    const height  = parseInt(obData.height) || 175;
-    const age     = parseInt(obData.age) || 28;
-    const sex     = obData.sex || 'male';
-    const suggested = calcTDEE(weight, height, age, sex, obData.goal);
-
-    if (!obData.customCal) {
-      obData.customCal   = {min: suggested.calories.min, max: suggested.calories.max};
-      obData.customProt  = {min: suggested.protein.min,  max: suggested.protein.max};
-      obData.customCarbs = {min: suggested.carbs.min,    max: suggested.carbs.max};
-      obData.customFat   = {min: suggested.fat.min,      max: suggested.fat.max};
-    }
-
-    el.innerHTML = `
-      <div class="cpb-question">Your personalised nutrition</div>
-      <div class="cpb-subtext">Calculated from your stats using Mifflin-St Jeor TDEE. Adjust the ranges if needed.</div>
-
-      <div style="background:rgba(82,183,136,0.07);border:1px solid var(--active);border-radius:10px;padding:12px 14px;margin-bottom:12px">
-        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--active);margin-bottom:8px">📊 TDEE estimate: ~${suggested.tdee} kcal</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          ${[
-            {label:'Calories', key:'customCal',   unit:'kcal', val:obData.customCal},
-            {label:'Protein',  key:'customProt',  unit:'g',    val:obData.customProt},
-            {label:'Carbs',    key:'customCarbs', unit:'g',    val:obData.customCarbs},
-            {label:'Fat',      key:'customFat',   unit:'g',    val:obData.customFat},
-          ].map(m => `
-            <div>
-              <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">${m.label}</div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <input type="number" value="${m.val.min}" style="width:55px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 6px;font-size:0.82rem;font-family:var(--font-body)" oninput="obData.${m.key}.min=parseInt(this.value)||0">
-                <span style="color:var(--muted);font-size:0.75rem">–</span>
-                <input type="number" value="${m.val.max}" style="width:55px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 6px;font-size:0.82rem;font-family:var(--font-body)" oninput="obData.${m.key}.max=parseInt(this.value)||0">
-                <span style="font-size:0.75rem;color:var(--muted)">${m.unit}</span>
-              </div>
-            </div>`).join('')}
-        </div>
-      </div>
-
-      <div style="margin-bottom:14px">
-        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">Meals per day</div>
-        <div style="display:flex;gap:8px">
-          ${[3,4,5,6].map(n => `
-            <div class="meal-count-btn ${(obData.mealCount||5)===n?'active':''}" onclick="obData.mealCount=${n};renderOBStep()" style="cursor:pointer">${n}</div>`).join('')}
-        </div>
-      </div>
-
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:16px">
-        <div style="font-size:0.82rem;font-weight:600;margin-bottom:4px">🤖 Generate a meal plan?</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">Create an AI-generated 7-day meal plan tailored to your new macros.</div>
-        <div style="display:flex;gap:8px">
-          <div class="cpb-option ${obData.genMealPlan===true?'selected':''}"  onclick="obData.genMealPlan=true;renderOBStep()"  style="flex:1;padding:8px 10px"><div class="cpb-option-label" style="font-size:0.82rem">✅ Yes please</div></div>
-          <div class="cpb-option ${obData.genMealPlan===false?'selected':''}" onclick="obData.genMealPlan=false;renderOBStep()" style="flex:1;padding:8px 10px"><div class="cpb-option-label" style="font-size:0.82rem">⏭ Skip for now</div></div>
-        </div>
-      </div>
-
-      <div class="cpb-nav">
-        <button class="cpb-back-btn" onclick="obStep=3;renderOBStep()">← Back</button>
-        <button class="cpb-next-btn" onclick="confirmOnboarding()">✅ Create Profile</button>
-      </div>
-    `;
-  }
-}
-
-function obValidateStep0() {
-  const name = document.getElementById('ob-name')?.value?.trim() || obData.name;
-  obData.name = name;
-  obData.age    = document.getElementById('ob-age')?.value    || obData.age;
-  obData.height = document.getElementById('ob-height')?.value || obData.height;
-  obData.sex    = document.getElementById('ob-sex')?.value    || obData.sex;
-  if (!obData.name) { showToast('⚠️ Please enter your name'); return; }
-  if (!obData.age || parseInt(obData.age) < 16) { showToast('⚠️ Enter a valid age'); return; }
-  if (!obData.height || parseInt(obData.height) < 140) { showToast('⚠️ Enter your height in cm'); return; }
-  obStep = 1;
-  renderOBStep();
-}
-
-function obValidateStep2() {
-  obData.currentWeight = document.getElementById('ob-cw')?.value || obData.currentWeight;
-  obData.targetWeight  = document.getElementById('ob-tw')?.value || obData.targetWeight;
-  obData.startDate     = document.getElementById('ob-start-date')?.value || obData.startDate;
-  if (!obData.currentWeight || parseFloat(obData.currentWeight) < 30) { showToast('⚠️ Enter your current weight'); return; }
-  if (!obData.targetWeight  || parseFloat(obData.targetWeight)  < 30) { showToast('⚠️ Enter your target weight');  return; }
-  obStep = 3;
-  renderOBStep();
-}
-
-function confirmOnboarding() {
-  const slot = obSlot;
-  const col  = PROFILE_COLORS[obData.colorIdx] || PROFILE_COLORS[0];
-
-  // Update PROFILES entry with user data
-  PROFILES[slot].name       = obData.name;
-  PROFILES[slot].emoji      = obData.emoji;
-  PROFILES[slot].color      = col.color;
-  PROFILES[slot].lightColor = col.light;
-  PROFILES[slot].theme      = col.theme;
-  PROFILES[slot].height     = parseInt(obData.height);
-  PROFILES[slot].age        = parseInt(obData.age);
-  PROFILES[slot].sex        = obData.sex;
-  PROFILES[slot].currentWeight = parseFloat(obData.currentWeight);
-  PROFILES[slot].targetWeight  = [parseFloat(obData.targetWeight), parseFloat(obData.targetWeight)];
-
-  // Persist user-entered profile config
-  const prefs = getPrefs(slot);
-  prefs.onboarded      = true;
-  prefs.userName       = obData.name;
-  prefs.userEmoji      = obData.emoji;
-  prefs.userColorIdx   = obData.colorIdx;
-  prefs.userAge        = parseInt(obData.age);
-  prefs.userHeight     = parseInt(obData.height);
-  prefs.userSex        = obData.sex;
-  prefs.goal           = obData.goal;
-  prefs.goalStartDate  = obData.startDate || new Date().toISOString().split('T')[0];
-  prefs.goalTargetWeight = parseFloat(obData.targetWeight);
-  prefs.goalStartWeight  = parseFloat(obData.currentWeight);
-  prefs.mealCount      = obData.mealCount || 5;
-  if (obData.customCal) {
-    prefs.customMacros = {
-      calories: obData.customCal,
-      protein:  obData.customProt,
-      carbs:    obData.customCarbs,
-      fat:      obData.customFat,
-    };
-  }
-
-  // Log starting weight
-  const today = new Date().toISOString().split('T')[0];
-  if (!weightLogs[slot]) weightLogs[slot] = [];
-  if (!weightLogs[slot].find(l => l.date === today))
-    weightLogs[slot].push({date: today, weight: parseFloat(obData.currentWeight)});
-
-  // Apply plan + progression
-  const recModel = obData._recModel || 'double';
-  selectedProgressionModel[slot] = recModel;
-  trainingWeekCount[slot] = 1;
-  if (obData.planChoice === 'switch' && obData.selectedPlanId)
-    activePlanId[slot] = obData.selectedPlanId;
-
-  saveAll();
-  closeOnboarding();
-  renderProfileCards();
-
-  showToast(`✅ Welcome, ${obData.name}! Profile created.`);
-
-  // Auto-select this profile and enter app
-  setTimeout(() => {
-    selectProfile(slot);
-    if (obData.genMealPlan === true) {
-      setTimeout(() => {
-        showPage('settings', document.querySelector('.nav-item:last-child'));
-        setTimeout(() => generateAIPlan(), 400);
-      }, 800);
-    }
-  }, 600);
-}
 
 function updateHeaderDate() {
   const d = new Date();
@@ -2251,7 +2344,9 @@ function switchDay(idx) {
 // ============ RENDER DAY ============
 function renderDay(idx) {
   const activePlan = userPrefs[currentProfile]?.activePlan;
-  const plan = activePlan ? activePlan[idx] : MEAL_PLANS[currentProfile][idx];
+  const mealPlanData = MEAL_PLANS[currentProfile] || MEAL_PLANS['max'];
+  const plan = activePlan ? activePlan[idx] : mealPlanData[idx];
+  if (!plan) return;
   const todayKey = currentProfile + '_' + idx;
   const shaken = shakenMeals[todayKey];
   const meals = shaken || plan.meals;
@@ -2363,7 +2458,7 @@ function updateCaloriesPill(cal) {
 // ============ MEAL MODAL ============
 function openMeal(idx) {
   const activePlan = userPrefs[currentProfile]?.activePlan;
-  const plan = activePlan ? activePlan[currentDayIdx] : MEAL_PLANS[currentProfile][currentDayIdx];
+  const plan = activePlan ? activePlan[currentDayIdx] : (MEAL_PLANS[currentProfile]||MEAL_PLANS["max"])[currentDayIdx];
   const todayKey = currentProfile + '_' + currentDayIdx;
   const shaken = shakenMeals[todayKey];
   const meals = shaken || plan.meals;
@@ -3307,23 +3402,6 @@ function saveORM(exerciseName) {
 }
 
 // ============ SUPPLEMENT DATA ============
-const SUPPLEMENTS = {
-  max: [
-    { id:'creatine',  name:'Creatine Monohydrate', dose:'5g', timing:'morning', timingLabel:'Morning', detail:'Mix into your first shake or glass of water. Timing flexible — consistency is what matters.' },
-    { id:'vitd',      name:'Vitamin D3 (2000–4000 IU)', dose:'1 capsule', timing:'morning', timingLabel:'Morning', detail:'Take with breakfast — fat-soluble, absorbs better with food.' },
-    { id:'omega3',    name:'Omega-3 Fish Oil', dose:'2 capsules', timing:'morning', timingLabel:'Morning', detail:'Take with a meal. Supports joint health and reduces inflammation.' },
-    { id:'magnesium', name:'Magnesium Glycinate', dose:'300–400mg', timing:'night', timingLabel:'Pre-bed', detail:'30–60 min before sleep. Supports recovery, deep sleep and muscle relaxation.' },
-    { id:'zinc',      name:'Zinc (as Zinc Citrate)', dose:'15–25mg', timing:'night', timingLabel:'Pre-bed', detail:'Take away from calcium/iron. Supports testosterone, immune function and muscle repair. Important during calorie deficit.' },
-  ],
-  kirsty: [
-    { id:'creatine',  name:'Creatine Monohydrate', dose:'5g', timing:'morning', timingLabel:'Morning', detail:'Mix into water or yoghurt. Take at the same time daily — loading is not needed.' },
-    { id:'vitd',      name:'Vitamin D3 (2000–4000 IU)', dose:'1 capsule', timing:'morning', timingLabel:'Morning', detail:'With breakfast. Critical for UK residents year-round.' },
-    { id:'omega3',    name:'Omega-3 Fish Oil', dose:'2 capsules', timing:'morning', timingLabel:'Morning', detail:'With a meal. Anti-inflammatory, supports hormonal health.' },
-    { id:'magnesium', name:'Magnesium Glycinate', dose:'300mg', timing:'night', timingLabel:'Pre-bed', detail:'30–60 min before sleep. Helps with stress, sleep quality and IBS symptoms.' },
-    { id:'ironvitc',  name:'Vitamin C', dose:'500mg', timing:'morning', timingLabel:'Morning', detail:'With breakfast. Supports immune function and iron absorption.' },
-    { id:'iron',      name:'Iron (Ferrous Bisglycinate)', dose:'18–25mg', timing:'morning', timingLabel:'Morning', detail:'Take on an empty stomach with Vitamin C for best absorption. Ferrous bisglycinate is gentler on IBS than ferrous sulphate. Common deficiency in active females.' },
-  ]
-};
 
 // Supplement notification schedule:
 // Morning supplements → remind at 09:00, final nudge at 12:00
@@ -3613,16 +3691,6 @@ function load() {
 }
 
 // ============ SETTINGS & PREFERENCES ============
-const DIET_OPTIONS = [
-  {id:'vegetarian', label:'🥦 Vegetarian'},
-  {id:'vegan', label:'🌱 Vegan'},
-  {id:'glutenfree', label:'🌾 Gluten-free'},
-  {id:'dairyfree', label:'🥛 Dairy-free'},
-  {id:'highprotein', label:'💪 High protein'},
-  {id:'lowcarb', label:'📉 Low carb'},
-  {id:'halal', label:'☪️ Halal'},
-  {id:'kosher', label:'✡️ Kosher'},
-];
 
 // userPrefs: {profile: {dietFlags:[], mealCount:5, loveFoods:[], avoidFoods:[], recipes:[]}}
 let userPrefs = {};
@@ -3930,7 +3998,7 @@ function getMatchingRecipes(mealName) {
 function swapMealWithRecipe(mealIdx, recipeIdx) {
   const recipe = getPrefs(currentProfile).recipes[recipeIdx];
   const activePlan = userPrefs[currentProfile]?.activePlan;
-  const plan = activePlan ? activePlan[currentDayIdx] : MEAL_PLANS[currentProfile][currentDayIdx];
+  const plan = activePlan ? activePlan[currentDayIdx] : (MEAL_PLANS[currentProfile]||MEAL_PLANS["max"])[currentDayIdx];
   const todayKey = currentProfile + '_' + currentDayIdx;
   if (!shakenMeals[todayKey]) {
     shakenMeals[todayKey] = plan.meals.map(m => ({...m}));
@@ -4105,430 +4173,9 @@ function applyAIPlan() {
 }
 
 // ============ WORKOUT PLAN LIBRARY ============
-const PLAN_GOALS = [
-  {id:'all',       label:'All Plans'},
-  {id:'recomp',    label:'🔄 Recomp'},
-  {id:'fatloss',   label:'🔥 Fat Loss'},
-  {id:'muscle',    label:'💪 Muscle'},
-  {id:'strength',  label:'🏋️ Strength'},
-  {id:'beginner',  label:'🌱 Beginner'},
-  {id:'athletic',  label:'⚡ Athletic'},
-  {id:'home',      label:'🏠 Home'},
-];
 
-const PLAN_LIBRARY = [
-  // ── RECOMP ──
-  {id:'recomp_4day', goal:'recomp', icon:'🔄', name:'4-Day Upper/Lower Recomp', defaultFor:['max'],
-   desc:'The gold standard for body recomposition. Heavy compounds Monday/Thursday, accessory work Tuesday/Friday. Balances strength retention with fat loss.',
-   days:4, frequency:'4×/week', equipment:'Full gym', level:'Intermediate', duration:'12–20 weeks',
-   progressionModel:'double',
-   schedule:[
-     {day:'Mon',type:'training',name:'Upper A — Push Focus',exercises:[
-       {name:'Barbell Bench Press',sets:4,reps:'5–6',rest:'3 min',note:'Primary strength movement. Add 2.5kg when all sets hit top of range.'},
-       {name:'Incline Dumbbell Press',sets:3,reps:'8–10',rest:'2 min',note:'Squeeze at top. Control the eccentric.'},
-       {name:'Seated DB Shoulder Press',sets:3,reps:'8–10',rest:'2 min',note:'Drive elbows down on descent.'},
-       {name:'Face Pulls (Cable)',sets:3,reps:'15–20',rest:'60s',note:'External rotation. Shoulder health — never skip.'},
-       {name:'Cable Lateral Raises',sets:3,reps:'12–15',rest:'60s',note:'Light weight, feel the mid-delt burn.'},
-       {name:'Tricep Pushdowns (Rope)',sets:3,reps:'12–15',rest:'60s',note:'Elbows pinned throughout.'},
-     ]},
-     {day:'Tue',type:'training',name:'Lower A — Quad Focus',exercises:[
-       {name:'Barbell Back Squat',sets:4,reps:'5–6',rest:'3 min',note:'Priority compound. Brace core, drive knees out.'},
-       {name:'Romanian Deadlift',sets:3,reps:'8–10',rest:'2.5 min',note:'Hinge, not squat. Hamstring stretch every rep.'},
-       {name:'Leg Press',sets:3,reps:'10–12',rest:'2 min',note:'Full depth, controlled.'},
-       {name:'Walking Lunges',sets:3,reps:'12 each',rest:'90s',note:'Add DBs when bodyweight is easy.'},
-       {name:'Lying Leg Curl',sets:3,reps:'12–15',rest:'90s',note:'Pause at top of each contraction.'},
-       {name:'Calf Raises (Machine)',sets:4,reps:'15–20',rest:'60s',note:'Deep stretch at bottom every rep.'},
-     ]},
-     {day:'Wed',type:'recovery',name:'Active Recovery',exercises:[]},
-     {day:'Thu',type:'training',name:'Upper B — Pull Focus',exercises:[
-       {name:'Weighted Pull-Ups / Lat Pulldown',sets:4,reps:'6–8',rest:'2.5 min',note:'If bodyweight is hard, use lat pulldown.'},
-       {name:'Barbell Bent-Over Row',sets:4,reps:'6–8',rest:'2.5 min',note:'Chest up, row to belly button.'},
-       {name:'Seated Cable Row (Close Grip)',sets:3,reps:'10–12',rest:'2 min',note:'Squeeze shoulder blades together.'},
-       {name:'Face Pulls (Cable)',sets:3,reps:'15–20',rest:'60s',note:'Non-negotiable for shoulder longevity.'},
-       {name:'Barbell Bicep Curl',sets:3,reps:'10–12',rest:'60s',note:'No swinging. Controlled tempo.'},
-       {name:'Hammer Curl',sets:2,reps:'10–12',rest:'60s',note:'Builds brachialis — arm thickness.'},
-     ]},
-     {day:'Fri',type:'training',name:'Lower B — Posterior Chain',exercises:[
-       {name:'Romanian Deadlift',sets:4,reps:'8–10',rest:'2.5 min',note:'Increase weight when all 4 sets hit 10.'},
-       {name:'Bulgarian Split Squat',sets:3,reps:'10–12 each',rest:'2 min',note:'Front foot forward, control descent.'},
-       {name:'Hip Thrust (Barbell)',sets:3,reps:'10–12',rest:'2 min',note:'Drive through heels, full glute squeeze.'},
-       {name:'Leg Press (Feet High)',sets:3,reps:'12–15',rest:'90s',note:'High placement = glutes/hamstrings.'},
-       {name:'Nordic Curl or Seated Leg Curl',sets:3,reps:'10–12',rest:'90s',note:'Hamstring isolation — injury prevention.'},
-       {name:'Seated Calf Raise',sets:3,reps:'15–20',rest:'60s',note:'Soleus focus, pause at bottom.'},
-     ]},
-     {day:'Sat',type:'cardio',name:'Zone 2 Cardio',exercises:[]},
-     {day:'Sun',type:'rest',name:'Full Rest',exercises:[]},
-   ]},
-
-  {id:'recomp_3day', goal:'recomp', icon:'🔄', name:'3-Day Full Body Recomp',
-   desc:'Perfect if you can only train 3 days. Each session hits every major muscle group. More frequency per muscle = faster recomp at lower volume.',
-   days:3, frequency:'3×/week', equipment:'Full gym', level:'Beginner–Intermediate', duration:'12–16 weeks',
-   progressionModel:'double',
-   schedule:[
-     {day:'Mon',type:'training',name:'Full Body A — Strength Focus',exercises:[
-       {name:'Barbell Back Squat',sets:4,reps:'6–8',rest:'3 min',note:'Priority lift. Every session.'},
-       {name:'Barbell Bench Press',sets:4,reps:'6–8',rest:'3 min',note:'Horizontal push. Track weekly.'},
-       {name:'Barbell Bent-Over Row',sets:4,reps:'6–8',rest:'2.5 min',note:'Equal volume to bench.'},
-       {name:'Romanian Deadlift',sets:3,reps:'8–10',rest:'2 min',note:'Posterior chain essential.'},
-       {name:'Face Pulls',sets:3,reps:'15–20',rest:'60s',note:'Shoulder health. Always.'},
-     ]},
-     {day:'Wed',type:'training',name:'Full Body B — Hypertrophy Focus',exercises:[
-       {name:'Leg Press',sets:4,reps:'10–12',rest:'2 min',note:'Quad volume day.'},
-       {name:'Hip Thrust',sets:3,reps:'10–12',rest:'2 min',note:'Glute focus. Squeeze at top.'},
-       {name:'Lat Pulldown',sets:4,reps:'10–12',rest:'2 min',note:'Pull elbows to ribcage.'},
-       {name:'Incline DB Press',sets:3,reps:'10–12',rest:'90s',note:'Upper chest emphasis.'},
-       {name:'DB Lateral Raise',sets:3,reps:'12–15',rest:'60s',note:'Mid-delt width.'},
-       {name:'Lying Leg Curl',sets:3,reps:'12–15',rest:'90s',note:'Hamstring isolation.'},
-     ]},
-     {day:'Fri',type:'training',name:'Full Body C — Volume + Finisher',exercises:[
-       {name:'Romanian Deadlift',sets:4,reps:'8–10',rest:'2.5 min',note:'Heaviest lift today.'},
-       {name:'Bulgarian Split Squat',sets:3,reps:'10–12 each',rest:'2 min',note:'Unilateral leg work.'},
-       {name:'Seated Cable Row',sets:4,reps:'10–12',rest:'90s',note:'Back volume.'},
-       {name:'DB Shoulder Press',sets:3,reps:'10–12',rest:'90s',note:'Overhead push.'},
-       {name:'Bicep Curl',sets:3,reps:'12–15',rest:'60s',note:'Arm volume.'},
-       {name:'Tricep Pushdown',sets:3,reps:'12–15',rest:'60s',note:'Arm volume.'},
-     ]},
-     {day:'Tue',type:'cardio',name:'Zone 2 Cardio (optional)',exercises:[]},
-     {day:'Thu',type:'cardio',name:'Zone 2 Cardio (optional)',exercises:[]},
-     {day:'Sat',type:'recovery',name:'Active Recovery',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  // ── FAT LOSS ──
-  {id:'fatloss_4day', goal:'fatloss', icon:'🔥', name:'4-Day Metabolic Resistance',
-   desc:'Higher rep ranges, shorter rest periods, supersets. Maximises calorie burn during the session while preserving muscle. Cardio finishers built in.',
-   days:4, frequency:'4×/week', equipment:'Full gym', level:'Intermediate', duration:'8–12 weeks',
-   progressionModel:'double',
-   schedule:[
-     {day:'Mon',type:'training',name:'Upper Metabolic A',exercises:[
-       {name:'DB Bench Press',sets:4,reps:'10–12',rest:'90s',note:'Superset with row below.'},
-       {name:'Seated Cable Row',sets:4,reps:'10–12',rest:'90s',note:'Superset with bench. Rest after both.'},
-       {name:'DB Shoulder Press',sets:3,reps:'12–15',rest:'60s',note:'Controlled eccentric.'},
-       {name:'Lat Pulldown',sets:3,reps:'12–15',rest:'60s',note:'Full stretch at top.'},
-       {name:'Tricep Pushdown',sets:3,reps:'15',rest:'45s',note:'High rep — keep moving.'},
-       {name:'Bicep Curl',sets:3,reps:'15',rest:'45s',note:'Superset with triceps.'},
-       {name:'CARDIO FINISHER: Bike/Row',sets:1,reps:'10 min',rest:'—',note:'All-out effort. Max HR.'},
-     ]},
-     {day:'Tue',type:'training',name:'Lower Metabolic A',exercises:[
-       {name:'Goblet Squat',sets:4,reps:'12–15',rest:'90s',note:'Heavier than you think — challenge yourself.'},
-       {name:'Romanian Deadlift',sets:4,reps:'12–15',rest:'90s',note:'Full hamstring stretch.'},
-       {name:'Walking Lunges',sets:3,reps:'15 each',rest:'60s',note:'Keep moving — no pause at top.'},
-       {name:'Hip Thrust',sets:3,reps:'15',rest:'60s',note:'Drive hard. Glute squeeze.'},
-       {name:'Leg Curl',sets:3,reps:'15',rest:'45s',note:'Slow eccentric.'},
-       {name:'CARDIO FINISHER: Sled Push/Row',sets:1,reps:'8 min',rest:'—',note:'Intervals: 20s on, 10s off.'},
-     ]},
-     {day:'Thu',type:'training',name:'Upper Metabolic B',exercises:[
-       {name:'Pull-Ups or Lat Pulldown',sets:4,reps:'8–12',rest:'90s',note:'If bodyweight is available, use it.'},
-       {name:'Incline DB Press',sets:4,reps:'12–15',rest:'90s',note:'Superset with rows below.'},
-       {name:'Face Pulls',sets:3,reps:'20',rest:'45s',note:'Shoulder health. High rep.'},
-       {name:'DB Lateral Raise',sets:4,reps:'15–20',rest:'45s',note:'Cable if available — constant tension.'},
-       {name:'Cable Fly',sets:3,reps:'15',rest:'60s',note:'Squeeze at midline.'},
-       {name:'CARDIO FINISHER: Rower',sets:1,reps:'12 min',rest:'—',note:'Zone 2 pace — maintain conversation.'},
-     ]},
-     {day:'Fri',type:'training',name:'Lower Metabolic B',exercises:[
-       {name:'Barbell Back Squat',sets:4,reps:'10–12',rest:'2 min',note:'Still the king. Even on fat loss.'},
-       {name:'Bulgarian Split Squat',sets:3,reps:'12 each',rest:'90s',note:'Unilateral = more metabolic.'},
-       {name:'Hip Thrust',sets:4,reps:'15',rest:'60s',note:'Glutes on fire.'},
-       {name:'Leg Extension',sets:3,reps:'15–20',rest:'45s',note:'Quad pump finisher.'},
-       {name:'Seated Leg Curl',sets:3,reps:'15–20',rest:'45s',note:'Hamstring pump.'},
-       {name:'CARDIO FINISHER: Stairmaster/Bike',sets:1,reps:'15 min',rest:'—',note:'Steady state. Zone 2. Focus on breathing.'},
-     ]},
-     {day:'Wed',type:'cardio',name:'Cardio Day',exercises:[]},
-     {day:'Sat',type:'cardio',name:'Cardio Day',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  // ── MUSCLE BUILDING ──
-  {id:'muscle_5day', goal:'muscle', icon:'💪', name:'5-Day PPL + Arms',
-   desc:'Push/Pull/Legs split with dedicated arm day. High volume, progressive overload focus. Best for those whose primary goal is hypertrophy.',
-   days:5, frequency:'5×/week', equipment:'Full gym', level:'Intermediate–Advanced', duration:'16–24 weeks',
-   progressionModel:'double',
-   schedule:[
-     {day:'Mon',type:'training',name:'Push — Chest, Shoulders, Triceps',exercises:[
-       {name:'Barbell Bench Press',sets:4,reps:'6–8',rest:'3 min',note:'Primary push. Track every session.'},
-       {name:'Incline DB Press',sets:4,reps:'8–10',rest:'2 min',note:'Upper chest. Control down.'},
-       {name:'DB Shoulder Press',sets:4,reps:'8–10',rest:'2 min',note:'Full ROM. Lockout at top.'},
-       {name:'Cable Lateral Raise',sets:4,reps:'12–15',rest:'60s',note:'Side delts = shoulder width.'},
-       {name:'Cable Fly (Low to High)',sets:3,reps:'12–15',rest:'60s',note:'Upper chest stretch.'},
-       {name:'Overhead Tricep Extension',sets:3,reps:'10–12',rest:'60s',note:'Long head stretch.'},
-       {name:'Tricep Pushdown',sets:3,reps:'12–15',rest:'45s',note:'Pump finisher.'},
-     ]},
-     {day:'Tue',type:'training',name:'Pull — Back, Biceps, Rear Delts',exercises:[
-       {name:'Weighted Pull-Up',sets:4,reps:'6–8',rest:'2.5 min',note:'Lat width builder.'},
-       {name:'Barbell Row',sets:4,reps:'6–8',rest:'2.5 min',note:'Thickness. Row to belly.'},
-       {name:'Chest Supported Row',sets:3,reps:'10–12',rest:'2 min',note:'Removes lower back fatigue.'},
-       {name:'Face Pulls',sets:4,reps:'15–20',rest:'60s',note:'Rear delt and health.'},
-       {name:'Barbell Curl',sets:4,reps:'8–10',rest:'90s',note:'Strength-based curl.'},
-       {name:'Incline DB Curl',sets:3,reps:'10–12',rest:'60s',note:'Long head stretch.'},
-     ]},
-     {day:'Wed',type:'training',name:'Legs — Full',exercises:[
-       {name:'Barbell Back Squat',sets:5,reps:'6–8',rest:'3 min',note:'The most important leg exercise.'},
-       {name:'Romanian Deadlift',sets:4,reps:'8–10',rest:'2.5 min',note:'Hamstring and glute hinge.'},
-       {name:'Leg Press',sets:4,reps:'10–12',rest:'2 min',note:'Volume quad work.'},
-       {name:'Hip Thrust',sets:4,reps:'10–12',rest:'2 min',note:'Glute peak contraction.'},
-       {name:'Leg Extension',sets:3,reps:'12–15',rest:'60s',note:'Quad isolation pump.'},
-       {name:'Lying Leg Curl',sets:3,reps:'12–15',rest:'60s',note:'Hamstring isolation.'},
-       {name:'Calf Raises',sets:5,reps:'15–20',rest:'45s',note:'High frequency needed for calves.'},
-     ]},
-     {day:'Thu',type:'rest',name:'Rest or Light Cardio',exercises:[]},
-     {day:'Fri',type:'training',name:'Push B — Shoulders Emphasis',exercises:[
-       {name:'Overhead Press (Barbell)',sets:4,reps:'6–8',rest:'3 min',note:'Shoulder strength. Strict form.'},
-       {name:'Incline DB Press',sets:4,reps:'10–12',rest:'2 min',note:'Upper chest volume.'},
-       {name:'Machine Fly',sets:3,reps:'12–15',rest:'60s',note:'Chest isolation.'},
-       {name:'DB Lateral Raise',sets:5,reps:'15–20',rest:'45s',note:'5 sets — delts need volume.'},
-       {name:'Tricep Dips',sets:3,reps:'10–12',rest:'90s',note:'Bodyweight or weighted.'},
-     ]},
-     {day:'Sat',type:'training',name:'Arms + Rear Delts',exercises:[
-       {name:'EZ Bar Curl',sets:4,reps:'8–10',rest:'90s',note:'Bicep mass builder.'},
-       {name:'Hammer Curl',sets:3,reps:'10–12',rest:'60s',note:'Brachialis thickness.'},
-       {name:'Preacher Curl',sets:3,reps:'10–12',rest:'60s',note:'Long head isolation.'},
-       {name:'Skull Crushers',sets:4,reps:'8–10',rest:'90s',note:'Tricep mass.'},
-       {name:'Cable Tricep Pushdown',sets:3,reps:'12–15',rest:'60s',note:'Volume finisher.'},
-       {name:'Reverse Fly (Cable/DB)',sets:4,reps:'15–20',rest:'45s',note:'Rear delt. Light weight, feel it.'},
-     ]},
-     {day:'Sun',type:'rest',name:'Full Rest',exercises:[]},
-   ]},
-
-  // ── STRENGTH ──
-  {id:'strength_4day', goal:'strength', icon:'🏋️', name:'4-Day Powerbuilding',
-   desc:'Combines powerlifting movements (squat, bench, deadlift, OHP) with bodybuilding accessories. Build real strength AND size.',
-   days:4, frequency:'4×/week', equipment:'Full gym + barbell', level:'Intermediate–Advanced', duration:'12–16 weeks',
-   progressionModel:'wave',
-   schedule:[
-     {day:'Mon',type:'training',name:'Squat Day',exercises:[
-       {name:'Barbell Back Squat',sets:5,reps:'3–5',rest:'4 min',note:'Wave: W1=5s, W2=4s, W3=3s, W4=deload.'},
-       {name:'Paused Squat',sets:3,reps:'3',rest:'3 min',note:'2-second pause at bottom.'},
-       {name:'Leg Press',sets:4,reps:'8–10',rest:'2 min',note:'Accessory volume.'},
-       {name:'Leg Extension',sets:3,reps:'12–15',rest:'90s',note:'Quad pump.'},
-       {name:'Seated Leg Curl',sets:3,reps:'12–15',rest:'90s',note:'Hamstring pump.'},
-       {name:'Calf Raises',sets:4,reps:'12–15',rest:'60s',note:'Full ROM.'},
-     ]},
-     {day:'Tue',type:'training',name:'Bench Day',exercises:[
-       {name:'Barbell Bench Press',sets:5,reps:'3–5',rest:'4 min',note:'Wave loading. 90% effort each set.'},
-       {name:'Close Grip Bench Press',sets:3,reps:'6–8',rest:'3 min',note:'Tricep strength + chest.'},
-       {name:'Incline DB Press',sets:4,reps:'8–10',rest:'2 min',note:'Upper chest accessory.'},
-       {name:'Face Pulls',sets:4,reps:'20',rest:'60s',note:'Shoulder health. Every session.'},
-       {name:'DB Lateral Raise',sets:4,reps:'12–15',rest:'60s',note:'Delt volume.'},
-       {name:'Tricep Pushdown',sets:4,reps:'10–12',rest:'60s',note:'Tricep volume.'},
-     ]},
-     {day:'Thu',type:'training',name:'Deadlift Day',exercises:[
-       {name:'Conventional Deadlift',sets:5,reps:'2–4',rest:'4 min',note:'King of all lifts. Perfect form always.'},
-       {name:'Romanian Deadlift',sets:4,reps:'6–8',rest:'2.5 min',note:'Hamstring accessory.'},
-       {name:'Weighted Pull-Up',sets:4,reps:'5–8',rest:'2.5 min',note:'Back strength.'},
-       {name:'Barbell Row',sets:4,reps:'6–8',rest:'2 min',note:'Upper back volume.'},
-       {name:'Face Pulls',sets:3,reps:'20',rest:'60s',note:'Non-negotiable.'},
-     ]},
-     {day:'Fri',type:'training',name:'OHP Day',exercises:[
-       {name:'Overhead Press (Barbell)',sets:5,reps:'3–5',rest:'4 min',note:'Strict press. No leg drive.'},
-       {name:'Push Press',sets:3,reps:'4–6',rest:'3 min',note:'Use leg drive for overload.'},
-       {name:'Lat Pulldown',sets:4,reps:'8–10',rest:'2 min',note:'Back volume on press day.'},
-       {name:'DB Shoulder Press',sets:4,reps:'10–12',rest:'90s',note:'Volume work.'},
-       {name:'Barbell Curl',sets:4,reps:'8–10',rest:'60s',note:'Arm strength.'},
-       {name:'Skull Crushers',sets:4,reps:'8–10',rest:'60s',note:'Tricep mass.'},
-     ]},
-     {day:'Wed',type:'cardio',name:'Cardio / Recovery',exercises:[]},
-     {day:'Sat',type:'rest',name:'Rest',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  // ── BEGINNER ──
-  {id:'beginner_3day', goal:'beginner', icon:'🌱', name:'3-Day Starting Strength',
-   desc:'The proven beginner programme. Full body 3×/week, linear progression, master the compound lifts. Perfect first 3–6 months.',
-   days:3, frequency:'3×/week', equipment:'Barbell + rack', level:'Complete beginner', duration:'3–6 months',
-   progressionModel:'linear',
-   schedule:[
-     {day:'Mon',type:'training',name:'Session A',exercises:[
-       {name:'Barbell Back Squat',sets:3,reps:'5',rest:'3 min',note:'Add 2.5kg every single session. Non-negotiable.'},
-       {name:'Barbell Bench Press',sets:3,reps:'5',rest:'3 min',note:'Add 2.5kg every session.'},
-       {name:'Barbell Bent-Over Row',sets:3,reps:'5',rest:'3 min',note:'Add 2.5kg every session.'},
-     ]},
-     {day:'Wed',type:'training',name:'Session B',exercises:[
-       {name:'Barbell Back Squat',sets:3,reps:'5',rest:'3 min',note:'Every session. Linear add.'},
-       {name:'Overhead Press (Barbell)',sets:3,reps:'5',rest:'3 min',note:'Strict. No leg drive.'},
-       {name:'Conventional Deadlift',sets:1,reps:'5',rest:'4 min',note:'1 heavy set. Add 5kg every session.'},
-     ]},
-     {day:'Fri',type:'training',name:'Session A (repeat)',exercises:[
-       {name:'Barbell Back Squat',sets:3,reps:'5',rest:'3 min',note:'Linear add from Wednesday.'},
-       {name:'Barbell Bench Press',sets:3,reps:'5',rest:'3 min',note:'Alternates with OHP each session.'},
-       {name:'Barbell Bent-Over Row',sets:3,reps:'5',rest:'3 min',note:'Linear add.'},
-     ]},
-     {day:'Tue',type:'rest',name:'Rest',exercises:[]},
-     {day:'Thu',type:'rest',name:'Rest',exercises:[]},
-     {day:'Sat',type:'rest',name:'Rest',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  {id:'beginner_fb', goal:'beginner', icon:'🌱', name:'3-Day Beginner Full Body (Dumbbell)',
-   desc:'For beginners with limited equipment or gym anxiety. Dumbbells and machines only, no barbell required. Build confidence and base fitness.',
-   days:3, frequency:'3×/week', equipment:'Dumbbells + machines', level:'Complete beginner', duration:'8–16 weeks',
-   progressionModel:'linear',
-   schedule:[
-     {day:'Mon',type:'training',name:'Full Body A',exercises:[
-       {name:'Goblet Squat',sets:3,reps:'10–12',rest:'2 min',note:'Master this before barbell squat.'},
-       {name:'DB Romanian Deadlift',sets:3,reps:'10–12',rest:'2 min',note:'Feel the hamstrings.'},
-       {name:'DB Bench Press',sets:3,reps:'10–12',rest:'90s',note:'Control the descent.'},
-       {name:'DB Row (each arm)',sets:3,reps:'10–12',rest:'90s',note:'Elbow drives back.'},
-       {name:'DB Shoulder Press',sets:3,reps:'10–12',rest:'90s',note:'Full ROM.'},
-       {name:'Plank',sets:3,reps:'30 sec',rest:'60s',note:'Core every session.'},
-     ]},
-     {day:'Wed',type:'training',name:'Full Body B',exercises:[
-       {name:'Leg Press (Machine)',sets:3,reps:'12',rest:'2 min',note:'Quad focus.'},
-       {name:'Hip Thrust (Bodyweight)',sets:3,reps:'15',rest:'90s',note:'Glute activation.'},
-       {name:'Lat Pulldown',sets:3,reps:'10–12',rest:'90s',note:'Pull to chest.'},
-       {name:'Push-Ups',sets:3,reps:'8–12',rest:'60s',note:'Incline if needed.'},
-       {name:'DB Lateral Raise',sets:3,reps:'12–15',rest:'60s',note:'Light weight.'},
-       {name:'Dead Bug',sets:3,reps:'8 each side',rest:'60s',note:'Core stability.'},
-     ]},
-     {day:'Fri',type:'training',name:'Full Body C',exercises:[
-       {name:'DB Split Squat',sets:3,reps:'10 each',rest:'90s',note:'Bodyweight first.'},
-       {name:'DB RDL',sets:3,reps:'12',rest:'90s',note:'Same as Monday but heavier.'},
-       {name:'Seated Cable Row',sets:3,reps:'12',rest:'90s',note:'Machine is fine.'},
-       {name:'Incline DB Press',sets:3,reps:'12',rest:'90s',note:'Upper chest focus.'},
-       {name:'Bicep Curl',sets:3,reps:'12',rest:'60s',note:'Arm work.'},
-       {name:'Tricep Pushdown',sets:3,reps:'12',rest:'60s',note:'Arm work.'},
-     ]},
-     {day:'Tue',type:'rest',name:'Rest',exercises:[]},
-     {day:'Thu',type:'rest',name:'Rest',exercises:[]},
-     {day:'Sat',type:'cardio',name:'Light Cardio (optional)',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  // ── ATHLETIC ──
-  {id:'athletic_4day', goal:'athletic', icon:'⚡', name:'4-Day Athletic Performance',
-   desc:'Built for sport. Power, explosiveness and conditioning alongside strength. Olympic lifts, plyometrics, speed work.',
-   days:4, frequency:'4×/week', equipment:'Full gym', level:'Intermediate', duration:'8–12 weeks',
-   progressionModel:'wave',
-   schedule:[
-     {day:'Mon',type:'training',name:'Power + Lower',exercises:[
-       {name:'Power Clean (or DB Hang Clean)',sets:5,reps:'3',rest:'3 min',note:'Explosive. Perfect form. Weight is secondary.'},
-       {name:'Box Jump',sets:4,reps:'5',rest:'2 min',note:'Max height. Land softly.'},
-       {name:'Barbell Back Squat',sets:4,reps:'4–6',rest:'3 min',note:'Heavy. Power base.'},
-       {name:'Romanian Deadlift',sets:3,reps:'6–8',rest:'2 min',note:'Posterior chain strength.'},
-       {name:'Single Leg Press',sets:3,reps:'10 each',rest:'90s',note:'Unilateral strength for sport.'},
-     ]},
-     {day:'Tue',type:'training',name:'Speed + Upper',exercises:[
-       {name:'Medicine Ball Chest Pass',sets:4,reps:'8',rest:'90s',note:'Explosive upper body. Throw hard.'},
-       {name:'Barbell Bench Press',sets:4,reps:'4–6',rest:'3 min',note:'Upper body strength.'},
-       {name:'Weighted Pull-Up',sets:4,reps:'5–8',rest:'2.5 min',note:'Back strength.'},
-       {name:'DB Shoulder Press',sets:3,reps:'8–10',rest:'2 min',note:'Overhead strength.'},
-       {name:'Face Pulls',sets:4,reps:'20',rest:'60s',note:'Shoulder health. Always.'},
-       {name:'Farmer Carries',sets:4,reps:'30m',rest:'90s',note:'Grip, core, conditioning.'},
-     ]},
-     {day:'Thu',type:'training',name:'Strength + Posterior Chain',exercises:[
-       {name:'Conventional Deadlift',sets:5,reps:'3–5',rest:'4 min',note:'Primary strength movement.'},
-       {name:'Hip Thrust',sets:4,reps:'8–10',rest:'2 min',note:'Glute power for acceleration.'},
-       {name:'Nordic Curl',sets:4,reps:'5–8',rest:'2.5 min',note:'Hamstring injury prevention essential for athletes.'},
-       {name:'Bulgarian Split Squat',sets:3,reps:'8 each',rest:'2 min',note:'Sport-specific unilateral.'},
-       {name:'Barbell Row',sets:4,reps:'6–8',rest:'2 min',note:'Upper back for posture.'},
-     ]},
-     {day:'Fri',type:'training',name:'Conditioning + Upper',exercises:[
-       {name:'Battle Ropes',sets:5,reps:'30 sec',rest:'30s',note:'Anaerobic conditioning.'},
-       {name:'Overhead Press',sets:4,reps:'5–8',rest:'2.5 min',note:'Full body strength.'},
-       {name:'Lat Pulldown',sets:4,reps:'8–10',rest:'2 min',note:'Back width.'},
-       {name:'Push-Up Variations',sets:4,reps:'15–20',rest:'60s',note:'Explosive or weighted.'},
-       {name:'Sled Push',sets:5,reps:'20m',rest:'90s',note:'Drive. Stay low. Power.'},
-     ]},
-     {day:'Wed',type:'cardio',name:'Sprint / Agility Day',exercises:[]},
-     {day:'Sat',type:'recovery',name:'Active Recovery',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  // ── HOME ──
-  {id:'home_3day', goal:'home', icon:'🏠', name:'3-Day Home Bodyweight',
-   desc:'Zero equipment needed. Progressive overload through harder variations, added reps, and tempo. Can be done anywhere.',
-   days:3, frequency:'3×/week', equipment:'None (optional: resistance bands)', level:'All levels', duration:'Ongoing',
-   progressionModel:'double',
-   schedule:[
-     {day:'Mon',type:'training',name:'Push + Core',exercises:[
-       {name:'Push-Ups',sets:4,reps:'8–15',rest:'90s',note:'Progress: incline → flat → decline → archer → one-arm.'},
-       {name:'Pike Push-Ups',sets:3,reps:'8–12',rest:'90s',note:'Shoulder focus.'},
-       {name:'Tricep Dips (Chair)',sets:3,reps:'10–15',rest:'60s',note:'Elevate feet to progress.'},
-       {name:'Plank',sets:3,reps:'45 sec',rest:'60s',note:'Perfect form. Progress to 90s.'},
-       {name:'Dead Bug',sets:3,reps:'10 each',rest:'60s',note:'Slow and controlled.'},
-       {name:'Hollow Hold',sets:3,reps:'20 sec',rest:'60s',note:'Core compression.'},
-     ]},
-     {day:'Wed',type:'training',name:'Pull + Legs',exercises:[
-       {name:'Bodyweight Squats',sets:4,reps:'15–20',rest:'90s',note:'Progress: BW → pause → jump → pistol.'},
-       {name:'Glute Bridge',sets:4,reps:'15–20',rest:'60s',note:'Progress to single leg.'},
-       {name:'Inverted Row (table/bar)',sets:4,reps:'8–12',rest:'90s',note:'Lower body = harder.'},
-       {name:'Reverse Lunge',sets:3,reps:'12 each',rest:'60s',note:'Control descent.'},
-       {name:'Superman',sets:3,reps:'12',rest:'60s',note:'Lower back extension.'},
-     ]},
-     {day:'Fri',type:'training',name:'Full Body AMRAP',exercises:[
-       {name:'Burpees',sets:4,reps:'10',rest:'90s',note:'Full body explosive.'},
-       {name:'Jump Squats',sets:4,reps:'10',rest:'90s',note:'Explosive lower.'},
-       {name:'Push-Up to T',sets:3,reps:'8 each',rest:'60s',note:'Rotation for core.'},
-       {name:'Mountain Climbers',sets:3,reps:'30 sec',rest:'60s',note:'Cardio + core.'},
-       {name:'Single Leg Glute Bridge',sets:3,reps:'15 each',rest:'60s',note:'Glute isolation.'},
-     ]},
-     {day:'Tue',type:'cardio',name:'Walk / Jog',exercises:[]},
-     {day:'Thu',type:'rest',name:'Rest',exercises:[]},
-     {day:'Sat',type:'cardio',name:'Active Outdoors',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-
-  // ── KIRSTY DEFAULT ──
-  {id:'kirsty_recomp', goal:'recomp', icon:'🔄', name:'3-Day Female Recomp', defaultFor:['kirsty'],
-   desc:'Designed for women focusing on body recomposition. Glute and hamstring emphasis, progressive loading, sustainable 3-day structure.',
-   days:3, frequency:'3×/week', equipment:'Full gym', level:'Beginner–Intermediate', duration:'16–24 weeks',
-   progressionModel:'double',
-   schedule:[
-     {day:'Mon',type:'training',name:'Full Body A — Strength Focus',exercises:[
-       {name:'Goblet Squat',sets:4,reps:'8–10',rest:'2 min',note:'Progress to barbell squat over weeks 4–6.'},
-       {name:'DB Romanian Deadlift',sets:3,reps:'10–12',rest:'2 min',note:'Hinge. Feel hamstrings.'},
-       {name:'Seated DB Shoulder Press',sets:3,reps:'10–12',rest:'90s',note:'Control down.'},
-       {name:'DB Row (each arm)',sets:3,reps:'10–12',rest:'90s',note:'Elbow drives back.'},
-       {name:'Push-Ups',sets:3,reps:'8–12',rest:'90s',note:'Progress to flat, then decline.'},
-       {name:'Plank',sets:3,reps:'30–45 sec',rest:'60s',note:'Core every session.'},
-     ]},
-     {day:'Wed',type:'cardio',name:'Cardio — Zone 2',exercises:[]},
-     {day:'Thu',type:'training',name:'Full Body B — Hypertrophy Focus',exercises:[
-       {name:'Leg Press (Machine)',sets:4,reps:'12–15',rest:'2 min',note:'Full depth.'},
-       {name:'Hip Thrust (BB or BW)',sets:3,reps:'12–15',rest:'90s',note:'Glute squeeze at top.'},
-       {name:'Lat Pulldown',sets:3,reps:'10–12',rest:'2 min',note:'Pull elbows to ribcage.'},
-       {name:'Chest Press (Machine)',sets:3,reps:'12–15',rest:'90s',note:'45° elbow angle.'},
-       {name:'DB Lateral Raise',sets:3,reps:'12–15',rest:'60s',note:'Shoulder width.'},
-       {name:'Leg Curl (Machine)',sets:3,reps:'12–15',rest:'90s',note:'Slow eccentric.'},
-       {name:'Dead Bug',sets:3,reps:'10 each',rest:'60s',note:'Core stability.'},
-     ]},
-     {day:'Sat',type:'training',name:'Full Body C — Strength + Finisher',exercises:[
-       {name:'Barbell Sumo Deadlift',sets:3,reps:'8–10',rest:'2.5 min',note:'Wide stance. Glutes and inner thighs.'},
-       {name:'Walking Lunges',sets:3,reps:'12 each',rest:'2 min',note:'Add DBs when ready.'},
-       {name:'Seated Cable Row',sets:3,reps:'10–12',rest:'90s',note:'Back volume.'},
-       {name:'Tricep Pushdown',sets:3,reps:'12–15',rest:'60s',note:'Arm tone.'},
-       {name:'Bicep Curl',sets:2,reps:'12–15',rest:'60s',note:'Arm tone.'},
-       {name:'CARDIO FINISHER: Bike/Row',sets:1,reps:'10 min',rest:'—',note:'Moderate pace — elevate HR to finish.'},
-     ]},
-     {day:'Tue',type:'rest',name:'Rest',exercises:[]},
-     {day:'Fri',type:'rest',name:'Rest',exercises:[]},
-     {day:'Sun',type:'rest',name:'Rest',exercises:[]},
-   ]},
-];
 
 // ============ PROGRESSION MODELS ============
-const PROGRESSION_MODELS = {
-  double: {
-    id:'double', name:'Double Progression', recommended:true,
-    tagline:'Best for most people — recomp, fat loss, intermediate lifters',
-    desc:'Build reps within a given range first, then increase weight once you hit the top of the range across all sets. Safe, sustainable and proven.',
-    rule:'📋 How it works:\n• Set a rep range e.g. 8–12 reps\n• Session 1: 3×8 @ 60kg\n• Session 2: 3×10 @ 60kg\n• Session 3: 3×12 @ 60kg ← hit top of range!\n• Session 4: 3×8 @ 62.5kg ← add 2.5kg, reset reps\n• Repeat. Progress guaranteed.',
-    increments:{upper:2.5, lower:5, small:1.25}
-  },
-  linear: {
-    id:'linear', name:'Linear Progression',
-    tagline:'Best for complete beginners — adds weight every single session',
-    desc:'Add a fixed amount of weight every session. Works brilliantly for the first 3–6 months when your neuromuscular adaptation allows rapid gains.',
-    rule:'📋 How it works:\n• Pick a starting weight (lighter than you think)\n• Add 2.5kg upper body / 5kg lower body every session\n• When you fail 3 sessions in a row, deload 10% and rebuild\n• Ride this as long as possible — beginners can run it for months.',
-    increments:{upper:2.5, lower:5, small:1.25}
-  },
-  wave: {
-    id:'wave', name:'Wave Loading',
-    tagline:'Best for intermediate–advanced lifters who have stalled on double progression',
-    desc:'3 weeks of building intensity, followed by 1 planned deload week. Manages accumulated fatigue and drives long-term progress beyond the beginner phase.',
-    rule:'📋 How it works:\n• Week 1: 4×8 @ 70% 1RM\n• Week 2: 4×6 @ 75% 1RM\n• Week 3: 4×4 @ 80% 1RM\n• Week 4: 3×8 @ 60% 1RM (deload)\n• Next wave: start heavier than previous Wave Week 1\n• Progress across waves, not within them.',
-    increments:{upper:2.5, lower:5, small:1.25}
-  }
-};
 
 // ============ PLAN STATE ============
 let activePlanId = {}; // {profile: planId}
@@ -4775,40 +4422,6 @@ function deleteCustomPlan(planId) {
 }
 
 // ============ GOAL SUGGESTER ============
-const GS_QUESTIONS = [
-  {
-    q:'What is your main goal right now?',
-    key:'goal',
-    options:[
-      {id:'recomp', icon:'🔄', label:'Body recomposition', desc:'Lose fat and gain muscle simultaneously'},
-      {id:'fatloss', icon:'🔥', label:'Lose fat', desc:'Primary focus on fat loss, maintain muscle'},
-      {id:'muscle', icon:'💪', label:'Build muscle', desc:'Maximise hypertrophy and size'},
-      {id:'strength', icon:'🏋️', label:'Get stronger', desc:'Improve your big lifts — squat, bench, deadlift'},
-      {id:'beginner', icon:'🌱', label:'Learn the basics', desc:'New to lifting or returning after a long break'},
-      {id:'athletic', icon:'⚡', label:'Athletic performance', desc:'Sport-specific strength, power and conditioning'},
-      {id:'home', icon:'🏠', label:'Train at home', desc:'Limited equipment, training from home'},
-    ]
-  },
-  {
-    q:'How many days per week can you realistically train?',
-    key:'days',
-    options:[
-      {id:'2', icon:'2️⃣', label:'2 days', desc:'Time is tight — make them count'},
-      {id:'3', icon:'3️⃣', label:'3 days', desc:'The sweet spot for most people'},
-      {id:'4', icon:'4️⃣', label:'4 days', desc:'Good balance of volume and recovery'},
-      {id:'5', icon:'5️⃣', label:'5+ days', desc:'High commitment, high results'},
-    ]
-  },
-  {
-    q:'How would you describe your training experience?',
-    key:'level',
-    options:[
-      {id:'beginner', icon:'🌱', label:'Beginner', desc:'Under 1 year lifting, still learning'},
-      {id:'intermediate', icon:'📈', label:'Intermediate', desc:'1–3 years, good form, some progress stalled'},
-      {id:'advanced', icon:'🔥', label:'Advanced', desc:'3+ years, understand periodisation'},
-    ]
-  }
-];
 
 let gsCurrentQ = 0;
 
@@ -5003,7 +4616,6 @@ function saveExerciseHistory(profile, exerciseName, sets) {
 }
 
 // ============ CUSTOM PLAN BUILDER ============
-const CPB_STEPS = ['Goal', 'Schedule', 'Exercises', 'Progression', 'Review'];
 
 function openCustomPlanBuilder() {
   cpbStep = 0;
@@ -5375,15 +4987,6 @@ function renderWorkoutFromPlan(idx) {
   }).join('');
 }
 // ============ GOAL PHASE SYSTEM ============
-const GOAL_LABELS = {
-  recomp:   {label:'Body Recomposition', icon:'🔄', calAdvice:'A small deficit (200–300 kcal) is intentional. Protein drives the recomp — protect it at all costs.'},
-  fatloss:  {label:'Fat Loss',           icon:'🔥', calAdvice:'Stay in your deficit consistently. If weight stalls for 2+ weeks, drop another 100–150 kcal or add a cardio session.'},
-  muscle:   {label:'Muscle Building',    icon:'💪', calAdvice:'A small surplus (200–300 kcal) accelerates growth. If you\'re gaining more than 0.5kg/week, slightly reduce calories.'},
-  strength: {label:'Strength',           icon:'🏋️', calAdvice:'Calories support strength. Don\'t go into a significant deficit — you need fuel to move heavy weight.'},
-  beginner: {label:'Learning the Basics',icon:'🌱', calAdvice:'Focus on protein and consistency first. Calorie precision matters less at this stage than building the habit.'},
-  athletic: {label:'Athletic Performance',icon:'⚡', calAdvice:'Performance needs fuel. Eat around maintenance — undereating kills speed, power and recovery.'},
-  home:     {label:'Home Training',      icon:'🏠', calAdvice:'Same principles apply — protein first, then overall calories. Consistency beats perfection.'},
-};
 
 let ngStep = 0;
 let ngData = {};
@@ -5595,7 +5198,6 @@ function getGoalWeek(startDate) {
   return Math.max(1, weeks);
 }
 
-const NG_STEPS = ['Goal', 'Date & Stats', '1RM Check', 'Plan', 'Nutrition'];
 
 function openNewGoal() {
   ngStep = 0;
@@ -5972,17 +5574,6 @@ function protDotClass(proteinG) {
 
 // ── Estimated fibre per meal (heuristic from food description) ──
 // Returns estimated grams; real values only exist on custom recipes
-const FIBRE_KEYWORDS = [
-  {kw:'oats',g:3},{kw:'wholegrain',g:3},{kw:'broccoli',g:3},{kw:'spinach',g:2},
-  {kw:'banana',g:2},{kw:'apple',g:2},{kw:'lentil',g:5},{kw:'bean',g:5},
-  {kw:'pea',g:4},{kw:'chickpea',g:5},{kw:'brown rice',g:2},{kw:'basmati rice',g:1},
-  {kw:'pasta',g:2},{kw:'wholemeal',g:3},{kw:'sweet potato',g:3},{kw:'potato',g:2},
-  {kw:'carrot',g:2},{kw:'pepper',g:1},{kw:'tomato',g:1},{kw:'cucumber',g:1},
-  {kw:'salad',g:2},{kw:'green bean',g:2},{kw:'mushroom',g:1},{kw:'onion',g:1},
-  {kw:'avocado',g:4},{kw:'almond',g:2},{kw:'walnut',g:2},{kw:'cashew',g:1},
-  {kw:'hazelnut',g:2},{kw:'brazil nut',g:2},{kw:'mixed nut',g:2},{kw:'greek yoghurt',g:0},
-  {kw:'berry',g:2},{kw:'raspberry',g:3},{kw:'strawberry',g:2},{kw:'blueberry',g:2},
-];
 
 function estimateFibre(meal) {
   // Custom recipes may have explicit fibre field
