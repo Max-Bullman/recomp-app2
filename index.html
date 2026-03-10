@@ -2248,6 +2248,16 @@ function updateHeaderDate() {
   document.getElementById('header-date').textContent = d.toLocaleDateString('en-GB', opts);
 }
 
+// ============ INIT ============
+window.addEventListener('DOMContentLoaded', () => {
+  load();
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hidden');
+    document.getElementById('profile-select').style.display = 'flex';
+  }, 1200);
+  updateHeaderDate();
+});
+
 function selectProfile(profile) {
   currentProfile = profile;
   prepTabMode = 'mine';
