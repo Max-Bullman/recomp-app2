@@ -7,8 +7,8 @@ const CACHE_NAME = CACHE_VERSION;
 
 // Assets to pre-cache on install — the entire app is one HTML file
 const PRECACHE_ASSETS = [
-  '/famealy/',
-  '/famealy/index.html',
+  '/Famealy/',
+  '/Famealy/index.html',
 ];
 
 // ── Install: pre-cache core assets ──────────────────────────────────────────
