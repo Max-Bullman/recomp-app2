@@ -1,15 +1,18 @@
 {
-  "name": "Famealy — Fitness & Household Nutrition",
+  "name": "Famealy \u2014 Fitness & Household Nutrition",
   "short_name": "Famealy",
   "description": "Serious fitness tracking for you. Shared nutrition for your household.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/recomp-app2/",
+  "scope": "/recomp-app2/",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#00ff87",
   "orientation": "portrait-primary",
   "lang": "en-GB",
-  "categories": ["health", "fitness"],
+  "categories": [
+    "health",
+    "fitness"
+  ],
   "icons": [
     {
       "src": "icon-192.png",
@@ -29,13 +32,13 @@
       "src": "screenshots/today.png",
       "sizes": "390x844",
       "type": "image/png",
-      "label": "Today tab — calorie ring and meal logging"
+      "label": "Today tab \u2014 calorie ring and meal logging"
     },
     {
       "src": "screenshots/workout.png",
       "sizes": "390x844",
       "type": "image/png",
-      "label": "Workout tab — exercise tracking"
+      "label": "Workout tab \u2014 exercise tracking"
     }
   ],
   "shortcuts": [
@@ -44,14 +47,24 @@
       "short_name": "Workout",
       "description": "Jump straight to today's session",
       "url": "/?tab=workout",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Log Weight",
       "short_name": "Body",
       "description": "Log today's weight",
       "url": "/?tab=body",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

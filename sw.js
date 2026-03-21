@@ -7,8 +7,8 @@ const CACHE_NAME = CACHE_VERSION;
 
 // Assets to pre-cache on install — the entire app is one HTML file
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
+  '/recomp-app2/',
+  '/recomp-app2/index.html',
 ];
 
 // ── Install: pre-cache core assets ──────────────────────────────────────────
