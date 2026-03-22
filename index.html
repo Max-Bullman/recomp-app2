@@ -7,7 +7,7 @@
   provided this copyright notice and licence header are retained in
   all copies or substantial portions of the software.
 
-  Full licence: https://github.com/Max-Bullman/famealy/blob/main/LICENSE
+  Full licence: https://github.com/Max-Bullman/Famealy/blob/main/LICENSE
 
   Built with ❤️ using vanilla HTML/CSS/JS + Claude AI (Anthropic)
   Nutritional data: USDA FoodData Central & UK Nutrient Databank
@@ -806,15 +806,22 @@ a { -webkit-tap-highlight-color: transparent; }
 .max-theme .generate-plan-btn { background: rgba(0,255,135,0.12); color: var(--max-light); border: 1px solid rgba(0,255,135,0.3); box-shadow: 0 0 20px rgba(0,255,135,0.08); }
 .kirsty-theme .generate-plan-btn { background: rgba(167,139,250,0.12); color: var(--kirsty-light); border: 1px solid rgba(167,139,250,0.3); }
 .generate-plan-btn:disabled { opacity: 0.5; }
-.ai-day-plan { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; }
-.ai-day-title { font-family: var(--font-head); font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+.ai-day-plan { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
+.ai-day-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ai-day-title { font-family: var(--font-head); font-size: 0.92rem; font-weight: 700; }
 .max-theme .ai-day-title { color: var(--max-light); }
 .kirsty-theme .ai-day-title { color: var(--kirsty-light); }
-.ai-meal-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--border); gap: 8px; font-size: 0.82rem; }
+.ai-day-meta { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+.ai-day-chevron { font-size: 0.75rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+.ai-day-plan.open .ai-day-chevron { transform: rotate(180deg); }
+.ai-day-body { display: none; padding: 0 14px 12px; border-top: 1px solid var(--border); }
+.ai-day-plan.open .ai-day-body { display: block; }
+.ai-meal-row { padding: 10px 0; border-bottom: 1px solid var(--border); }
 .ai-meal-row:last-child { border-bottom: none; }
-.ai-meal-name { color: var(--muted); font-weight: 600; flex-shrink: 0; width: 80px; }
-.ai-meal-food { flex: 1; line-height: 1.4; }
-.ai-meal-macros { font-size: 0.7rem; color: var(--muted); flex-shrink: 0; text-align: right; }
+.ai-meal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.ai-meal-name { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+.ai-meal-macros { font-size: 0.68rem; color: var(--muted); text-align: right; flex-shrink: 0; margin-left: 8px; }
+.ai-meal-food { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 .apply-plan-btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 700; font-family: var(--font-head); color: #fff; margin-top: 10px; }
 .max-theme .apply-plan-btn { background: var(--max); }
 .kirsty-theme .apply-plan-btn { background: var(--kirsty); }
@@ -1070,6 +1077,15 @@ body { height: 100%; margin: 0; padding: 0; overflow: hidden; display: flex; fle
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px" id="ob-goals"></div>
     <button class="ob-next" id="ob-next-3" onclick="obNext(3)" disabled>Continue →</button>
     <button class="ob-back" onclick="obBack(3)">← Back</button>
+  </div>
+
+  <!-- Step 3b: Strength targets -->
+  <div class="ob-step" id="ob-step-3b">
+    <div class="ob-title">Any strength goals?</div>
+    <div class="ob-sub" style="margin-bottom:20px">Set a target weight for your key lifts. We will track your progress and celebrate when you hit them. Skip if not sure yet.</div>
+    <div id="ob-strength-targets"></div>
+    <button class="ob-next" onclick="obNext('3b')">Continue →</button>
+    <button class="ob-back" onclick="obBack('3b')">← Back</button>
   </div>
 
   <!-- Step 4: Gym -->
@@ -1392,7 +1408,7 @@ body { height: 100%; margin: 0; padding: 0; overflow: hidden; display: flex; fle
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="logo"><span>Re</span><span>Comp</span></div>
+  <div class="logo"><span>Fam</span><span>ealy</span></div>
   <p id="splash-names">Famealy</p>
 </div>
 
@@ -2040,6 +2056,8 @@ body { height: 100%; margin: 0; padding: 0; overflow: hidden; display: flex; fle
       </div>
       <!-- Coach feedback history -->
       <div id="coach-feedback-history" style="display:none;margin-bottom:10px"></div>
+      <!-- Pre-session coach button -->
+      <button id="pre-session-coach-btn" style="display:none;width:100%;padding:12px 14px;border-radius:10px;background:rgba(0,255,135,0.08);border:1px solid rgba(0,255,135,0.25);color:var(--max-light);font-size:0.88rem;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:12px;text-align:left" onclick="openPreSessionCoach(currentDayIdx)">🧠 How should I train today? <span style="font-weight:400;color:var(--muted);font-size:0.78rem">· Coach sets your weights based on readiness</span></button>
       <div id="workout-content"></div>
     </div>
 
@@ -2231,7 +2249,12 @@ body { height: 100%; margin: 0; padding: 0; overflow: hidden; display: flex; fle
           <button onclick="toggleWorkoutHistoryPanel()" id="workout-history-toggle-btn" style="font-size:0.72rem;font-weight:700;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--muted)">Show ▾</button>
         </div>
         <div id="workout-history-panel" style="display:none">
+          <div style="display:flex;gap:6px;margin-bottom:12px">
+            <button onclick="setWorkoutHistoryTab('sessions',this)" id="wh-tab-sessions" class="meal-lib-tab active" style="font-size:0.72rem">Sessions</button>
+            <button onclick="setWorkoutHistoryTab('lifts',this)" id="wh-tab-lifts" class="meal-lib-tab" style="font-size:0.72rem">Lift Tracker</button>
+          </div>
           <div id="workout-history-list"></div>
+          <div id="workout-lift-tracker" style="display:none"></div>
         </div>
       </div>
 
@@ -2247,6 +2270,35 @@ body { height: 100%; margin: 0; padding: 0; overflow: hidden; display: flex; fle
         <div id="conditioning-panel" style="display:none">
           <div id="conditioning-week-summary" style="margin-bottom:10px"></div>
           <div id="conditioning-history"></div>
+        </div>
+      </div>
+
+      <!-- STRENGTH GOALS -->
+      <div style="margin-top:20px;margin-bottom:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="section-title" style="margin-bottom:0">🎯 Strength Goals</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="openStrengthGoalEditor()" style="font-size:0.72rem;font-weight:700;padding:5px 10px;background:var(--max-light);color:#000;border:none;border-radius:7px;cursor:pointer">+ Edit</button>
+            <button onclick="toggleStrengthGoalsPanel()" id="strength-goals-toggle-btn" style="font-size:0.72rem;font-weight:700;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--muted)">Show ▾</button>
+          </div>
+        </div>
+        <div id="strength-goals-panel" style="display:none">
+          <div id="strength-goals-content"></div>
+        </div>
+      </div>
+
+      <!-- PROGRESS PHOTOS -->
+      <div style="margin-top:20px;margin-bottom:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="section-title" style="margin-bottom:0">📸 Progress Photos</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="openProgressPhotoUpload()" style="font-size:0.72rem;font-weight:700;padding:5px 10px;background:var(--max-light);color:#000;border:none;border-radius:7px;cursor:pointer">+ Add</button>
+            <button onclick="openPhotoComparison()" style="font-size:0.72rem;font-weight:700;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--muted)">Compare</button>
+            <button onclick="toggleProgressPhotosPanel()" id="progress-photos-toggle-btn" style="font-size:0.72rem;font-weight:700;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--muted)">Show &#9662;</button>
+          </div>
+        </div>
+        <div id="progress-photos-panel" style="display:none">
+          <div id="progress-photos-content"></div>
         </div>
       </div>
 
@@ -2662,6 +2714,18 @@ body { height: 100%; margin: 0; padding: 0; overflow: hidden; display: flex; fle
         </div>
       </div>
 
+      <div class="accordion-section" id="acc-notifications">
+        <div class="accordion-header" onclick="toggleAccordion('acc-notifications')">
+          <div class="accordion-title">&#x1F514; Notifications</div>
+          <span class="accordion-chevron">&#9660;</span>
+        </div>
+        <div class="accordion-body">
+          <p style="font-size:0.78rem;color:var(--muted);margin-top:10px;margin-bottom:14px;line-height:1.5">Choose which reminders you want. Notifications only fire when the app has been opened today.</p>
+          <div id="notif-banner-inline"></div>
+          <div id="notif-toggles-list"></div>
+        </div>
+      </div>
+
       <div class="accordion-section" id="acc-colour">
         <div class="accordion-header" onclick="toggleAccordion('acc-colour')">
           <div class="accordion-title">🎨 App Colour</div>
@@ -2808,7 +2872,6 @@ async function sbPushData(showConfirmToast) {
       showToast('⚠️ Sync failed — check connection');
     } else {
       if (authBtn) { authBtn.textContent = '✅'; authBtn.style.opacity = '1'; setTimeout(() => { authBtn.textContent = '☁️'; authBtn.style.color = 'var(--active)'; authBtn.style.opacity = '1'; }, 1500); }
-      // Store last sync time and update the settings UI if visible
       const syncTime = new Date().toISOString();
       storageSet('recomp_last_sync', syncTime);
       updateLastSyncedLabel(syncTime);
@@ -2929,10 +2992,7 @@ function updateLastSyncedLabel(isoTime) {
   const el = document.getElementById('last-synced-label');
   if (!el) return;
   const formatted = formatSyncTime(isoTime);
-  if (formatted) {
-    el.textContent = 'Last synced ' + formatted;
-    el.style.display = '';
-  }
+  if (formatted) { el.textContent = 'Last synced ' + formatted; el.style.display = ''; }
 }
 
 function buildAuthSignedInHTML(email) {
@@ -3700,7 +3760,7 @@ const GS_QUESTIONS = [
 const CPB_STEPS = ['Goal', 'Schedule', 'Exercises', 'Progression', 'Review'];
 
 const GOAL_LABELS = {
-  recomp:    {label:'Body Recomposition',    icon:'🔄', calAdvice:'An 8–15% deficit drives recomp. Protein (2.2–2.6g/kg) is non-negotiable — it preserves muscle while you lose fat. Expect slow scale movement; track measurements and strength gains instead.'},
+  recomp:    {label:'Body Recomposition',    icon:'🔄', calAdvice:'An 8–15% deficit drives recomp. Protein (2.2–2.6g/kg) is non-negotiable — it preserves muscle while you lose fat. Expect slow scale movement; track measurements and strength gains instead. Advanced lifters (3+ years): consider a tighter 8–10% deficit or true maintenance — the closer you are to your genetic ceiling, the harder aggressive cuts hit lean mass.'},
   fatloss:   {label:'Fat Loss',              icon:'🔥', calAdvice:'A 12–20% deficit is aggressive but safe when protein is high (2.3–2.8g/kg). Never exceed 20% deficit. If weekly loss exceeds 1% of bodyweight, add 100–150 kcal back immediately to protect muscle.'},
   muscle:    {label:'Muscle Building',       icon:'💪', calAdvice:'A 5–10% calorie surplus fuels muscle growth without excessive fat gain. Protein needs drop slightly in a surplus (1.8–2.2g/kg) — extra calories contribute to the anabolic environment.'},
   strength:  {label:'Strength',             icon:'🏋️', calAdvice:'Eat at or near maintenance — strength requires fuel. Protein at 2.0–2.4g/kg supports connective tissue and recovery. A small surplus on heavy training days is fine and often beneficial.'},
@@ -5245,6 +5305,7 @@ let obState = {
     coachStyle: null, gymComfort: null, cookingConfidence: null,
     beyondGoals: [], injuries: '', derailers: ''
   },
+  strengthTargets: [],
 };
 
 // Common supplements to pick from during onboarding
@@ -5585,6 +5646,45 @@ function obPQMulti(field, value, el) {
   }
 }
 
+function obBuildStrengthTargets() {
+  var el = document.getElementById('ob-strength-targets');
+  if (!el) return;
+  var existing = {};
+  (obState.strengthTargets||[]).forEach(function(t){ existing[t.lift]=t.targetKg; });
+  var html = '';
+  OB_STRENGTH_LIFTS.forEach(function(lift) {
+    html += '<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px">'
+      +'<span style="font-size:1.2rem;flex-shrink:0">'+lift.icon+'</span>'
+      +'<div style="flex:1;font-size:0.88rem;font-weight:600;color:var(--text)">'+lift.name+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<input type="number" id="ob-lift-'+lift.id+'" value="'+(existing[lift.id]||'')+'" placeholder="—" min="0" max="500" step="2.5" style="width:64px;padding:7px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--text);font-family:var(--font-body);text-align:center">'
+      +'<span style="font-size:0.75rem;color:var(--muted)">kg</span></div></div>';
+  });
+  var customTarget = (obState.strengthTargets||[]).find(function(t){ return t.custom; });
+  html += '<div style="margin-top:4px;margin-bottom:16px">'
+    +'<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Custom lift (optional)</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<input type="text" id="ob-lift-custom-name" placeholder="Exercise name" value="'+(customTarget?customTarget.liftName:'')+'" style="flex:1;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;color:var(--text);font-family:var(--font-body)">'
+    +'<input type="number" id="ob-lift-custom-kg" placeholder="kg" value="'+(customTarget?customTarget.targetKg:'')+'" min="0" max="500" step="2.5" style="width:70px;padding:9px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;color:var(--text);font-family:var(--font-body);text-align:center">'
+    +'</div></div>'
+    +'<div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:4px">Leave blank to skip — set targets anytime in Body → Strength Goals</div>';
+  el.innerHTML = html;
+}
+
+function obCollectStrengthTargets() {
+  var targets = [];
+  var today = new Date().toISOString().slice(0,10);
+  OB_STRENGTH_LIFTS.forEach(function(lift) {
+    var input = document.getElementById('ob-lift-'+lift.id);
+    var val = input ? parseFloat(input.value) : null;
+    if (val&&val>0) targets.push({ lift:lift.id, liftName:lift.name, targetKg:val, setAt:today, currentBest:null });
+  });
+  var cName = (document.getElementById('ob-lift-custom-name')||{}).value||'';
+  var cKg = parseFloat((document.getElementById('ob-lift-custom-kg')||{}).value)||null;
+  if (cName&&cKg>0) targets.push({ lift:cName.toLowerCase().replace(/\s+/g,'_'), liftName:cName, targetKg:cKg, setAt:today, currentBest:null, custom:true });
+  obState.strengthTargets = targets;
+}
+
 function obCollectPersonality() {
   // Collect textarea fields — chip selections already stored live via obPQPick/obPQMulti
   const injuries  = document.getElementById('ob-pq-injuries');
@@ -5646,6 +5746,11 @@ function obNext(fromStep) {
     obState.profiles[1].age    = parseInt(document.getElementById('ob-age-1').value) || null;
     obShowStep(3);
   } else if (fromStep === 3) {
+    var gymGoals = ['recomp','fatloss','muscle','strength','beginner','athletic'];
+    if (gymGoals.includes(obState.goal1)) { obBuildStrengthTargets(); obShowStep('3b'); }
+    else { obShowStep(4); }
+  } else if (fromStep === '3b') {
+    obCollectStrengthTargets();
     obShowStep(4);
   } else if (fromStep === 4) {
     obBuildPlanList();
@@ -5679,7 +5784,8 @@ function obBack(fromStep) {
   if (fromStep === 2) obShowStep(1);
   else if (fromStep === '2b') obShowStep(2);
   else if (fromStep === 3) obShowStep('2b');
-  else if (fromStep === 4) obShowStep(3);
+  else if (fromStep === '3b') obShowStep(3);
+  else if (fromStep === 4) { var gymGoals=['recomp','fatloss','muscle','strength','beginner','athletic']; obShowStep(gymGoals.includes(obState.goal1)?'3b':3); }
   else if (fromStep === 5) obShowStep(4);
   else if (fromStep === 6) obShowStep(5);
   else if (fromStep === 7) obShowStep(6);
@@ -5825,6 +5931,12 @@ function obFinish() {
     injuries:           (document.getElementById('ob-pq-injuries')  || {}).value || '',
     derailers:          (document.getElementById('ob-pq-derailers') || {}).value || '',
   };
+
+  // Save strength targets
+  if (obState.strengthTargets && obState.strengthTargets.length) {
+    if (!userPrefs['max']) userPrefs['max'] = {};
+    userPrefs['max'].strengthTargets = obState.strengthTargets;
+  }
 
   // Mark onboarding complete + stamp onboarding date for 12-week check-in trigger
   const todayISO = new Date().toISOString().slice(0,10);
@@ -6780,92 +6892,75 @@ function openMoveSessionModal(fromDayIdx) {
   const plan = getActivePlan(profile);
   if (!plan) return;
   const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const fullDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const weekKey = getWeekKey();
-
-  // Build options: rest days in this week that we can swap WITH
-  // We show all 7 days except today, labelled with what they currently have
-  const options = days.map((dayName, idx) => {
+  const fromSwapKey = profile + '_' + weekKey + '_' + fromDayIdx;
+  const fromEffIdx = (sessionDaySwaps[fromSwapKey] !== undefined && sessionDaySwaps[fromSwapKey] !== -1) ? sessionDaySwaps[fromSwapKey] : fromDayIdx;
+  const fromDayPlan = plan.schedule.find(d => d.day === days[fromEffIdx]) || {};
+  const sessionName = fromDayPlan.name || 'this session';
+  const options = days.map(function(dayName, idx) {
     if (idx === fromDayIdx) return null;
-    // What is currently scheduled on this day (respecting existing swaps)?
     const swapKey = profile + '_' + weekKey + '_' + idx;
-    const effectiveIdx = (sessionDaySwaps[swapKey] !== undefined) ? sessionDaySwaps[swapKey] : idx;
+    const effectiveIdx = (sessionDaySwaps[swapKey] !== undefined && sessionDaySwaps[swapKey] !== -1) ? sessionDaySwaps[swapKey] : idx;
     const effectiveDayName = days[effectiveIdx];
     const dayPlan = plan.schedule.find(d => d.day === effectiveDayName) || {type:'rest', name:'Rest'};
-    const typeLabel = dayPlan.type === 'training' ? '🏋️ ' + dayPlan.name
-                    : dayPlan.type === 'cardio'   ? '🏃 Cardio'
-                    : dayPlan.type === 'recovery' ? '🔄 Active Recovery'
-                    : '😴 Rest';
-    return { idx, dayName, typeLabel };
+    const typeLabel = dayPlan.type === 'training' ? dayPlan.name : dayPlan.type === 'cardio' ? 'Cardio' : dayPlan.type === 'recovery' ? 'Active Recovery' : 'Rest day';
+    const typeIcon = dayPlan.type === 'training' ? '🏋️' : dayPlan.type === 'cardio' ? '🏃' : dayPlan.type === 'recovery' ? '🔄' : '😴';
+    return { idx, dayName, fullDay: fullDays[idx], typeLabel, typeIcon };
   }).filter(Boolean);
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay open';
   overlay.id = 'move-session-overlay';
-
-  const fromSwapKey = profile + '_' + weekKey + '_' + fromDayIdx;
-  const fromEffIdx = (sessionDaySwaps[fromSwapKey] !== undefined) ? sessionDaySwaps[fromSwapKey] : fromDayIdx;
-  const fromDayPlan = plan.schedule.find(d => d.day === days[fromEffIdx]) || {};
-  const sessionName = fromDayPlan.name || 'this session';
-
-  overlay.innerHTML =
-    '<div class="modal">' +
-    '<div class="modal-handle"></div>' +
-    '<div class="modal-title">📅 Move session</div>' +
-    '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;line-height:1.5">' +
-      '<b style="color:var(--text)">' + sessionName + '</b> · Move to a different day this week. The days will swap — whatever is on that day comes here instead.' +
-    '</div>' +
-    options.map(o =>
-      '<button onclick="applySessionDaySwap(' + fromDayIdx + ',' + o.idx + ')" ' +
-      'style="width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);margin-bottom:8px;font-size:0.88rem;font-weight:600;color:var(--text);cursor:pointer;font-family:var(--font-body)">' +
-      '<span style="font-weight:700;color:var(--active);margin-right:8px">' + o.dayName + '</span>' + o.typeLabel +
-      '</button>'
-    ).join('') +
-    '<button onclick="document.getElementById("move-session-overlay")?.remove()" ' +
-    'style="width:100%;padding:11px;border-radius:10px;background:none;border:1px solid var(--border);font-size:0.85rem;color:var(--muted);cursor:pointer;margin-top:4px">Cancel</button>' +
-    '</div>';
-
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) overlay.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  const handle = document.createElement('div'); handle.className = 'modal-handle'; modal.appendChild(handle);
+  const title = document.createElement('div'); title.className = 'modal-title'; title.textContent = 'Move session'; modal.appendChild(title);
+  const desc = document.createElement('div');
+  desc.style.cssText = 'font-size:0.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5';
+  desc.innerHTML = 'Where do you want to do <b style="color:var(--text)">' + sessionName + '</b> this week?';
+  modal.appendChild(desc);
+  options.forEach(function(o) {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);margin-bottom:8px;font-size:0.88rem;font-weight:600;color:var(--text);cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:space-between';
+    btn.innerHTML = '<span style="font-weight:700;color:var(--active)">' + o.fullDay + '</span><span style="font-size:0.75rem;color:var(--muted);font-weight:400">' + o.typeIcon + ' ' + o.typeLabel + '</span>';
+    btn.addEventListener('click', function() { applySessionMove(fromDayIdx, o.idx); });
+    modal.appendChild(btn);
   });
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:11px;border-radius:10px;background:none;border:1px solid var(--border);font-size:0.85rem;color:var(--muted);cursor:pointer;margin-top:4px';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', function() { overlay.remove(); });
+  modal.appendChild(cancelBtn);
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
 
-function applySessionDaySwap(dayA, dayB) {
+function applySessionMove(fromDayIdx, toDayIdx) {
   const profile = currentProfile;
   const weekKey = getWeekKey();
-
-  // Read current effective sources for both days
-  const keyA = profile + '_' + weekKey + '_' + dayA;
-  const keyB = profile + '_' + weekKey + '_' + dayB;
-  const srcA = (sessionDaySwaps[keyA] !== undefined) ? sessionDaySwaps[keyA] : dayA;
-  const srcB = (sessionDaySwaps[keyB] !== undefined) ? sessionDaySwaps[keyB] : dayB;
-
-  // Swap: day A now shows what was on B, day B shows what was on A
-  sessionDaySwaps[keyA] = srcB;
-  sessionDaySwaps[keyB] = srcA;
-
+  const keyFrom = profile + '_' + weekKey + '_' + fromDayIdx;
+  const keyTo   = profile + '_' + weekKey + '_' + toDayIdx;
+  const srcFrom = (sessionDaySwaps[keyFrom] !== undefined && sessionDaySwaps[keyFrom] !== -1) ? sessionDaySwaps[keyFrom] : fromDayIdx;
+  sessionDaySwaps[keyTo] = srcFrom;
+  sessionDaySwaps[keyFrom] = -1;
   saveAll();
   document.getElementById('move-session-overlay')?.remove();
   renderWorkout(currentDayIdx);
   renderDayNav();
-  showToast('📅 Session moved for this week');
+  showToast('📅 Session moved to ' + ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][toDayIdx]);
 }
 
 function clearSessionDaySwap(dayIdx) {
   const profile = currentProfile;
   const weekKey = getWeekKey();
-  const keyA = profile + '_' + weekKey + '_' + dayIdx;
-  // Find the paired swap and clear both
-  const srcIdx = sessionDaySwaps[keyA];
-  if (srcIdx !== undefined) {
-    const keyB = profile + '_' + weekKey + '_' + srcIdx;
-    delete sessionDaySwaps[keyA];
-    delete sessionDaySwaps[keyB];
-    saveAll();
-    renderWorkout(currentDayIdx);
-    renderDayNav();
-    showToast('📅 Session move cleared');
-  }
+  const prefix = profile + '_' + weekKey + '_';
+  Object.keys(sessionDaySwaps).forEach(function(k) { if (k.startsWith(prefix)) delete sessionDaySwaps[k]; });
+  saveAll();
+  renderWorkout(currentDayIdx);
+  renderDayNav();
+  showToast('📅 Session move cleared');
 }
 
 function openScheduleModal() {
@@ -7585,6 +7680,242 @@ function saveSet(wKey, ei, si, field, val) {
   save();
 }
 
+function getAllTimeMaxWeight(profile, exerciseName) {
+  var allMax = 0;
+  (workoutHistory[profile] || []).forEach(function(session) {
+    (session.exercises || []).forEach(function(ex) {
+      if (ex.name !== exerciseName) return;
+      (ex.sets || []).forEach(function(s) {
+        if (s.done && !s.skipped && s.weight && s.weight > allMax) allMax = s.weight;
+      });
+    });
+  });
+  return allMax;
+}
+
+function checkPersonalBest(profile, exerciseName, weight) {
+  if (!weight || weight <= 0) return false;
+  return getAllTimeMaxWeight(profile, exerciseName) > 0 && weight > getAllTimeMaxWeight(profile, exerciseName);
+}
+
+function showPBToast(exerciseName, weight) {
+  var existing = document.getElementById("pb-toast");
+  if (existing) existing.remove();
+  var toast = document.createElement("div");
+  toast.id = "pb-toast";
+  toast.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#00ff87,#00c96e);color:#000;padding:18px 24px;border-radius:16px;font-family:var(--font-head);font-weight:800;font-size:1.1rem;text-align:center;z-index:99999;box-shadow:0 8px 32px rgba(0,255,135,0.4);animation:pbPop 0.3s cubic-bezier(0.34,1.56,0.64,1);min-width:220px;pointer-events:none";
+  toast.innerHTML = "<div style=\"font-size:1.8rem;margin-bottom:4px\">🏆</div><div>Personal Best!</div><div style=\"font-size:0.82rem;font-weight:600;margin-top:4px;opacity:0.8\">" + exerciseName + " · " + weight + "kg</div>";
+  if (!document.getElementById("pb-toast-style")) {
+    var style = document.createElement("style");
+    style.id = "pb-toast-style";
+    style.textContent = "@keyframes pbPop { from { opacity:0; transform:translate(-50%,-50%) scale(0.7); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }";
+    document.head.appendChild(style);
+  }
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.style.transition = "opacity 0.4s"; toast.style.opacity = "0"; setTimeout(function() { toast.remove(); }, 400); }, 2200);
+}
+
+function checkStrengthTargetHit(profile, exerciseName, weight) {
+  var prefs = getPrefs(profile);
+  var targets = prefs.strengthTargets || [];
+  var liftMap = { bench:["barbell bench press","bench press"], squat:["barbell back squat","back squat","squat"], deadlift:["barbell deadlift","deadlift"], ohp:["overhead press","military press"], row:["barbell row","bent over row"] };
+  return targets.find(function(t) {
+    if (weight < t.targetKg || t.achieved) return false;
+    var names = liftMap[t.lift] || [t.liftName];
+    return names.some(function(n){ return exerciseName.toLowerCase().includes(n.toLowerCase()); }) || (t.custom && exerciseName.toLowerCase().includes((t.liftName||"").toLowerCase()));
+  }) || null;
+}
+
+async function showStrengthTargetHit(exerciseName, weight, target) {
+  var prefs = getPrefs(currentProfile);
+  var targets = prefs.strengthTargets || [];
+  var ti = targets.findIndex(function(t){ return t.lift === target.lift; });
+  if (ti >= 0) { targets[ti].achieved = true; targets[ti].achievedAt = new Date().toISOString().slice(0,10); targets[ti].achievedWeight = weight; }
+  saveAll();
+  var overlay = document.createElement("div");
+  overlay.className = "modal-overlay open";
+  overlay.id = "strength-target-overlay";
+  overlay.style.cssText = "background:rgba(0,0,0,0.85)";
+  var modal = document.createElement("div");
+  modal.className = "modal";
+  modal.style.cssText = "text-align:center;padding:32px 24px";
+  modal.innerHTML = "<div style=\"font-size:3.5rem;margin-bottom:12px\">🏆</div>"
+    + "<div style=\"font-family:var(--font-head);font-size:1.4rem;font-weight:800;color:var(--active);margin-bottom:8px\">Goal smashed!</div>"
+    + "<div style=\"font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px\">" + target.liftName + " " + target.targetKg + "kg</div>"
+    + "<div style=\"font-size:0.82rem;color:var(--muted);margin-bottom:24px;line-height:1.6\">You hit " + weight + "kg.</div>"
+    + "<div id=\"strength-target-coach-note\" style=\"background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:0.82rem;color:var(--muted);line-height:1.6;text-align:left;display:none\"></div>"
+    + "<button onclick=\"openNewStrengthTarget(&quot;" + target.lift + "&quot;,&quot;" + target.liftName + "&quot;," + weight + ")\" style=\"width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head);margin-bottom:8px\">Set a new target 🎯</button>"
+    + "<button onclick=\"document.getElementById(&quot;strength-target-overlay&quot;).remove()\" style=\"width:100%;padding:10px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer\">Close</button>";
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  var apiKey = getApiKey();
+  if (apiKey) {
+    var noteEl = document.getElementById("strength-target-coach-note");
+    if (noteEl) {
+      noteEl.style.display = "block";
+      noteEl.textContent = "Your coach is writing a breakdown...";
+      try {
+        var coachCtx = getCoachContext(currentProfile);
+        var prompt = "The athlete just hit their strength goal: " + target.liftName + " " + target.targetKg + "kg (achieved " + weight + "kg). " + coachCtx + "Write 2-3 sentences as their coach: acknowledge specifically, note what contributed, give one next step. No lists.";
+        var resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+          body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:200,messages:[{role:"user",content:prompt}]})
+        });
+        var data = await resp.json();
+        var text = data.content && data.content[0] ? data.content[0].text.trim() : "";
+        if (text && noteEl) noteEl.innerHTML = "<div style=\"font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--active);margin-bottom:6px\">🧠 Coach says</div>" + text;
+      } catch(e) { if (noteEl) noteEl.style.display = "none"; }
+    }
+  }
+}
+
+function openNewStrengthTarget(liftId, liftName, currentWeight) {
+  document.getElementById("strength-target-overlay")?.remove();
+  var overlay = document.createElement("div");
+  overlay.className = "modal-overlay open";
+  overlay.id = "new-target-overlay";
+  var modal = document.createElement("div");
+  modal.className = "modal";
+  var handle = document.createElement("div"); handle.className = "modal-handle"; modal.appendChild(handle);
+  var title = document.createElement("div"); title.className = "modal-title"; title.textContent = "New target — " + liftName; modal.appendChild(title);
+  var desc = document.createElement("div"); desc.style.cssText = "font-size:0.82rem;color:var(--muted);margin-bottom:16px"; desc.textContent = "Current best: " + currentWeight + "kg. What are you aiming for next?"; modal.appendChild(desc);
+  var inputRow = document.createElement("div"); inputRow.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:20px";
+  inputRow.innerHTML = "<input type=\"number\" id=\"new-target-kg\" placeholder=\"New target\" min=\"" + currentWeight + "\" max=\"500\" step=\"2.5\" style=\"flex:1;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:1.1rem;font-weight:700;color:var(--text);font-family:var(--font-body);text-align:center\"><span style=\"font-size:0.88rem;color:var(--muted);flex-shrink:0\">kg</span>";
+  modal.appendChild(inputRow);
+  var saveBtn = document.createElement("button");
+  saveBtn.style.cssText = "width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head);margin-bottom:8px";
+  saveBtn.textContent = "Set new target";
+  saveBtn.addEventListener("click", function() {
+    var newKg = parseFloat((document.getElementById("new-target-kg")||{}).value);
+    if (!newKg || newKg <= currentWeight) { showToast("Target must be higher than your current best"); return; }
+    var prefs = getPrefs(currentProfile);
+    var targets = prefs.strengthTargets || [];
+    var today = new Date().toISOString().slice(0,10);
+    var ex2 = targets.find(function(t){ return t.lift === liftId; });
+    if (ex2) { ex2.targetKg = newKg; ex2.setAt = today; ex2.achieved = false; ex2.achievedAt = null; }
+    else targets.push({ lift:liftId, liftName:liftName, targetKg:newKg, setAt:today, currentBest:null });
+    userPrefs[currentProfile].strengthTargets = targets;
+    saveAll(); overlay.remove(); renderStrengthDashboard(currentProfile);
+    showToast("🎯 New target: " + liftName + " " + newKg + "kg");
+  });
+  modal.appendChild(saveBtn);
+  var skipBtn = document.createElement("button");
+  skipBtn.style.cssText = "width:100%;padding:10px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer";
+  skipBtn.textContent = "No new target for now";
+  skipBtn.addEventListener("click", function(){ overlay.remove(); });
+  modal.appendChild(skipBtn);
+  overlay.appendChild(modal);
+  overlay.addEventListener("click", function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function analyseExerciseSets(exName, sets, targetReps) {
+  var doneSets = sets.filter(function(s) { return s.done && !s.skipped; });
+  if (!doneSets.length) return null;
+  var weights = doneSets.map(function(s){ return s.weight||0; }).filter(Boolean);
+  var rpes    = doneSets.map(function(s){ return s.rpe||0; }).filter(Boolean);
+  var repsCounted = doneSets.map(function(s){ return parseFloat(s.reps)||0; }).filter(Boolean);
+  var avgRpe = rpes.length ? rpes.reduce(function(a,b){return a+b;},0)/rpes.length : null;
+  var maxRpe = rpes.length ? Math.max.apply(null,rpes) : null;
+  var avgReps = repsCounted.length ? repsCounted.reduce(function(a,b){return a+b;},0)/repsCounted.length : null;
+  var targetRepMin=null, targetRepMax=null;
+  if (targetReps) {
+    var parts = String(targetReps).match(/(\d+)/g);
+    if (parts&&parts.length>=2){targetRepMin=parseInt(parts[0]);targetRepMax=parseInt(parts[1]);}
+    else if (parts&&parts.length===1){targetRepMin=targetRepMax=parseInt(parts[0]);}
+  }
+  return {doneSets:doneSets.length,avgRpe,maxRpe,avgReps,targetRepMin,targetRepMax,weights,rpes};
+}
+
+function shouldInterject(analysis, exName, profile) {
+  if (!analysis) return null;
+  var {avgRpe,maxRpe,avgReps,targetRepMin,targetRepMax,doneSets} = analysis;
+  if (doneSets===0) return null;
+  if (avgRpe!==null && avgRpe<=6 && doneSets>=2)
+    return {type:'easy',headline:'You had more in the tank',icon:'💪',message:'Average RPE '+avgRpe.toFixed(1)+' across '+doneSets+' sets — well within your capacity. The coach wants to weigh in before your next exercise.'};
+  if (maxRpe!==null && maxRpe>=9 && doneSets>=1)
+    return {type:'hard',headline:'That last set was very tough',icon:'⚠️',message:'RPE '+maxRpe+' on a working set is close to your max. The coach has a recommendation before you move on.'};
+  if (avgReps!==null && targetRepMin!==null && avgReps<targetRepMin-1 && doneSets>=2)
+    return {type:'reps_short',headline:'You fell short of target reps',icon:'📉',message:'Target was '+(targetRepMin===targetRepMax?targetRepMin:targetRepMin+'–'+targetRepMax)+' reps, you averaged '+avgReps.toFixed(1)+'. The coach wants to explain what this means.'};
+  if (avgRpe!==null && avgRpe<=7 && targetRepMax!==null && avgReps!==null && avgReps>=targetRepMax && doneSets>=2)
+    return {type:'ready_to_progress',headline:'You are ready to go heavier',icon:'📈',message:'All sets hit the top of your rep range at RPE '+avgRpe.toFixed(1)+'. The coach has a weight recommendation.'};
+  return null;
+}
+
+async function fireCoachInterjection(exName, analysis, interjection, sets, targetReps) {
+  var apiKey = getApiKey();
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'coach-interjection-overlay';
+  overlay.style.cssText = 'background:rgba(0,0,0,0.88)';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'max-height:88vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; modal.appendChild(handle);
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px';
+  header.innerHTML = '<div style="font-size:1.8rem;flex-shrink:0">'+interjection.icon+'</div>'
+    +'<div><div style="font-family:var(--font-head);font-size:1rem;font-weight:800;color:var(--text)">'+interjection.headline+'</div>'
+    +'<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">🧠 Coach · '+exName+'</div></div>';
+  modal.appendChild(header);
+  var summary = document.createElement('div');
+  summary.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px';
+  var doneSets = sets.filter(function(s){return s.done&&!s.skipped;});
+  summary.innerHTML = doneSets.map(function(s,i){
+    return '<div style="font-size:0.78rem;color:var(--muted);padding:3px 0;display:flex;gap:8px">'
+      +'<span style="color:var(--active);font-weight:700;flex-shrink:0">S'+(i+1)+'</span>'
+      +'<span>'+(s.weight?s.weight+'kg':'—')+' × '+(s.reps||'—')+(s.rpe?' · RPE '+s.rpe:'')+'</span></div>';
+  }).join('');
+  modal.appendChild(summary);
+  var msgEl = document.createElement('div');
+  msgEl.id = 'interjection-coach-msg';
+  msgEl.style.cssText = 'font-size:0.85rem;color:var(--text);line-height:1.7;margin-bottom:20px;min-height:60px';
+  msgEl.textContent = apiKey ? 'Your coach is reviewing your sets…' : interjection.message;
+  modal.appendChild(msgEl);
+  var ackBtn = document.createElement('button');
+  ackBtn.style.cssText = 'width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head);margin-bottom:8px';
+  ackBtn.textContent = 'Got it — keep going 💪';
+  ackBtn.addEventListener('click', function(){ overlay.remove(); });
+  modal.appendChild(ackBtn);
+  var askBtn = document.createElement('button');
+  askBtn.style.cssText = 'width:100%;padding:11px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-size:0.85rem;font-weight:600;color:var(--text);cursor:pointer;font-family:var(--font-body)';
+  askBtn.textContent = '💬 Ask the coach a question';
+  askBtn.addEventListener('click', function(){ overlay.remove(); openExerciseInfo(exName); });
+  modal.appendChild(askBtn);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  if (apiKey) {
+    try {
+      var profile = currentProfile;
+      var p = PROFILES[profile];
+      var prefs = getPrefs(profile);
+      var coachCtx = getCoachContext(profile);
+      var plan = getActivePlan(profile);
+      var weekNum = trainingWeekCount[profile]||1;
+      var setDesc = doneSets.map(function(s,i){ return 'Set '+(i+1)+': '+(s.weight||'—')+'kg × '+(s.reps||'—')+(s.rpe?' @ RPE '+s.rpe:''); }).join(', ');
+      var pastSessions = (workoutHistory[profile]||[]).filter(function(s){ return (s.exercises||[]).some(function(ex){return ex.name===exName;}); }).slice(-4);
+      var histDesc = pastSessions.map(function(s){ var ex=s.exercises.find(function(e){return e.name===exName;}); var best=Math.max.apply(null,(ex.sets||[]).filter(function(st){return st.done&&st.weight;}).map(function(st){return st.weight;}).concat([0])); return new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+': best '+best+'kg'; }).join(', ')||'No previous history';
+      var prompt = 'You are a personal trainer coaching ' + p.name + ' mid-session. They completed all sets of ' + exName + '. Give ONE specific actionable coaching point based on the data.\n'
+        + 'ATHLETE: ' + p.name + ' · Goal: ' + (prefs.goal||'recomp') + ' · Week ' + weekNum + '\n'
+        + coachCtx + '\n'
+        + 'EXERCISE: ' + exName + (targetReps ? ' · Target reps: ' + targetReps : '') + '\n'
+        + 'SETS: ' + setDesc + '\n'
+        + 'HISTORY: ' + histDesc + '\n'
+        + 'SITUATION: ' + interjection.type + ' — ' + interjection.headline + '\n'
+        + 'Write 2-4 sentences. Reference actual numbers. No lists.';
+      var resp = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+      var data = await resp.json();
+      var text = data.content&&data.content[0]?data.content[0].text.trim():'';
+      if (text) { var el=document.getElementById('interjection-coach-msg'); if(el) el.textContent=text; }
+    } catch(e) { var el=document.getElementById('interjection-coach-msg'); if(el) el.textContent=interjection.message; }
+  }
+}
+
+function openExerciseInfo(exerciseName) {
+  var coachBtns = document.querySelectorAll('[data-coach-exercise]');
+  coachBtns.forEach(function(btn){ if(btn.getAttribute('data-coach-exercise')===exerciseName) btn.click(); });
+}
+
 function toggleSetDone(wKey, ei, si) {
   if (!workoutLogs[wKey]) workoutLogs[wKey] = {};
   if (!workoutLogs[wKey][ei]) workoutLogs[wKey][ei] = {};
@@ -7592,8 +7923,19 @@ function toggleSetDone(wKey, ei, si) {
   workoutLogs[wKey][ei][si].done = !workoutLogs[wKey][ei][si].done;
   save();
 
-  // If marking as done, start the rest timer
+  // If marking as done, start the rest timer and check for PB
   if (workoutLogs[wKey][ei][si].done) {
+    var pbWeight = workoutLogs[wKey][ei][si].weight;
+    if (pbWeight) {
+      var activePlanForPB = getActivePlan(currentProfile);
+      var workoutForPB = activePlanForPB ? getWorkoutForDayFromPlan(currentProfile, currentDayIdx) : getWorkoutForDay(currentProfile, currentDayIdx);
+      var exNameForPB = workoutForPB && workoutForPB.exercises && workoutForPB.exercises[ei] ? (workoutForPB.exercises[ei].swappedWith || workoutForPB.exercises[ei]).name : null;
+      if (exNameForPB && checkPersonalBest(currentProfile, exNameForPB, pbWeight)) {
+        var hitTarget = checkStrengthTargetHit(currentProfile, exNameForPB, pbWeight);
+        if (hitTarget) { showStrengthTargetHit(exNameForPB, pbWeight, hitTarget); }
+        else { showPBToast(exNameForPB, pbWeight); }
+      }
+    }
     requestNotificationPermission();
     // Get rest period from exercise spec
     const activePlanForTimer = getActivePlan(currentProfile);
@@ -7621,6 +7963,13 @@ function toggleSetDone(wKey, ei, si) {
       const ex = workout.exercises[ei];
       const sets = Object.keys(exLogs).filter(k => !isNaN(k)).map(k => exLogs[k]);
       saveExerciseHistory(currentProfile, ex.name, sets);
+
+      // Coach interjection
+      const interjectAnalysis = analyseExerciseSets(ex.name, sets, ex.reps);
+      const interjectMsg = shouldInterject(interjectAnalysis, ex.name, currentProfile);
+      if (interjectMsg) {
+        setTimeout(function() { fireCoachInterjection(ex.name, interjectAnalysis, interjectMsg, sets, ex.reps); }, 600);
+      }
 
       // Auto-apply progression: check if weights should increase
       const progStatus = getProgressionStatus(currentProfile, workout, ei);
@@ -8577,6 +8926,9 @@ function isWeekPlanConfirmed(profile) { return isShopConfirmed(profile); }
 
 // ============ BODY TRACKING ============
 function renderBodyTracking() {
+  // Refresh strength dashboard if panel is open
+  var sgPanel = document.getElementById('strength-goals-panel');
+  if (sgPanel && sgPanel.style.display !== 'none') renderStrengthDashboard(currentProfile);
   const p = PROFILES[currentProfile];
   const macros = getProfileMacros(currentProfile);
   const prefs = getPrefs(currentProfile);
@@ -8931,6 +9283,110 @@ function toggleCoachMemoryPanel() {
   panel.style.display = isOpen ? 'none' : 'block';
   btn.textContent = isOpen ? 'Show ▾' : 'Hide ▴';
   if (!isOpen) renderCoachMemoryCard(currentProfile);
+}
+
+function setWorkoutHistoryTab(tab, btn) {
+  document.querySelectorAll('#workout-history-panel .meal-lib-tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var sl = document.getElementById('workout-history-list');
+  var lt = document.getElementById('workout-lift-tracker');
+  if (tab === 'sessions') { if(sl) sl.style.display=''; if(lt) lt.style.display='none'; }
+  else { if(sl) sl.style.display='none'; if(lt) lt.style.display=''; renderLiftTracker(currentProfile); }
+}
+
+function renderLiftTracker(profile) {
+  var el = document.getElementById('workout-lift-tracker');
+  if (!el) return;
+  var sessions = workoutHistory[profile] || [];
+  if (!sessions.length) { el.innerHTML='<div style="text-align:center;padding:24px 0;color:var(--muted);font-size:0.82rem">No workout history yet.</div>'; return; }
+  var exerciseMap = buildExerciseMap(sessions);
+  var exercises = Object.keys(exerciseMap).filter(function(n){ return exerciseMap[n].length >= 2; });
+  if (!exercises.length) { el.innerHTML='<div style="text-align:center;padding:24px 0;color:var(--muted);font-size:0.82rem">Complete 2+ sessions of the same exercise to see progression charts.</div>'; return; }
+  exercises.sort(function(a,b){ return exerciseMap[b][exerciseMap[b].length-1].date.localeCompare(exerciseMap[a][exerciseMap[a].length-1].date); });
+  el.innerHTML = '<div style="margin-bottom:14px"><select id="lift-tracker-select" onchange="updateLiftChart(this.value,&quot;'+profile+'&quot;)" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;color:var(--text);font-family:var(--font-body)">'
+    + exercises.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('')
+    + '</select></div>'
+    + '<div id="lift-chart-container" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">'
+    + '<div id="lift-progress-chart"></div></div>'
+    + '<div id="lift-chart-stats"></div>'
+    + '<div id="lift-chart-history" style="margin-top:10px"></div>';
+  updateLiftChart(exercises[0], profile);
+}
+
+function buildExerciseMap(sessions) {
+  var map = {};
+  sessions.forEach(function(session) {
+    (session.exercises||[]).forEach(function(ex) {
+      if (!ex.name) return;
+      if (!map[ex.name]) map[ex.name] = [];
+      var done = (ex.sets||[]).filter(function(s){ return s.done && !s.skipped && s.weight; });
+      if (!done.length) return;
+      var top = Math.max.apply(null, done.map(function(s){ return s.weight; }));
+      var rpes = done.filter(function(s){ return s.rpe; });
+      var avgRpe = rpes.length ? Math.round(rpes.reduce(function(a,s){ return a+s.rpe; },0)/rpes.length*10)/10 : null;
+      map[ex.name].push({ date: (session.date||'').slice(0,10), topWeight:top, avgRpe:avgRpe, sets:done.length });
+    });
+  });
+  return map;
+}
+
+function updateLiftChart(exerciseName, profile) {
+  var sessions = workoutHistory[profile] || [];
+  var map = buildExerciseMap(sessions);
+  var data = map[exerciseName] || [];
+  if (!data.length) return;
+  var p = PROFILES[profile];
+  var accentHex = p.lightColor || '#00ff87';
+  var last8 = data.slice(-8);
+  var weights = last8.map(function(d){ return d.topWeight; });
+  var minW = Math.max(0, Math.min.apply(null,weights) - 5);
+  var maxW = Math.max.apply(null,weights) + 5;
+  var range = maxW - minW || 1;
+  var W = 300, H = 130, pL=36, pR=8, pT=10, pB=28;
+  var plotW = W-pL-pR, plotH = H-pT-pB;
+  function xP(i){ return pL + (i/(last8.length-1||1))*plotW; }
+  function yP(w){ return pT + plotH - ((w-minW)/range)*plotH; }
+  var pts = last8.map(function(d,i){ return xP(i)+','+yP(d.topWeight); }).join(' ');
+  var area = pL+','+(pT+plotH)+' '+pts+' '+(pL+plotW)+','+(pT+plotH);
+  var svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:'+H+'px">';
+  for (var yi=0;yi<=4;yi++) {
+    var yw=minW+(range*yi/4), yp2=yP(yw);
+    svg += '<line x1="'+pL+'" y1="'+yp2+'" x2="'+(W-pR)+'" y2="'+yp2+'" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>';
+    svg += '<text x="'+(pL-4)+'" y="'+(yp2+4)+'" font-size="9" fill="rgba(255,255,255,0.35)" text-anchor="end">'+Math.round(yw)+'</text>';
+  }
+  svg += '<polygon points="'+area+'" fill="'+accentHex+'" fill-opacity="0.08"/>';
+  svg += '<polyline points="'+pts+'" fill="none" stroke="'+accentHex+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  last8.forEach(function(d,i) {
+    var cx=xP(i), cy=yP(d.topWeight), isLast=i===last8.length-1;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(isLast?5:3.5)+'" fill="'+accentHex+'" stroke="#0a0a0f" stroke-width="2"/>';
+    if (isLast) svg += '<text x="'+cx+'" y="'+(cy-9)+'" font-size="10" font-weight="700" fill="'+accentHex+'" text-anchor="middle">'+d.topWeight+'kg</text>';
+    var sd = d.date ? d.date.slice(5) : '';
+    svg += '<text x="'+cx+'" y="'+(H-6)+'" font-size="8" fill="rgba(255,255,255,0.35)" text-anchor="middle">'+sd+'</text>';
+  });
+  svg += '</svg>';
+  var chartEl = document.getElementById('lift-progress-chart');
+  if (chartEl) chartEl.innerHTML = svg;
+  var statsEl = document.getElementById('lift-chart-stats');
+  if (statsEl) {
+    var first=data[0].topWeight, latest=data[data.length-1].topWeight, gain=latest-first;
+    var best=Math.max.apply(null,data.map(function(d){return d.topWeight;}));
+    var lastRpe=data[data.length-1].avgRpe;
+    statsEl.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">'
+      +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;margin-bottom:2px">All-time best</div><div style="font-size:0.9rem;font-weight:800;color:'+accentHex+'">'+best+'kg</div></div>'
+      +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Total gain</div><div style="font-size:0.9rem;font-weight:800;color:'+(gain>=0?accentHex:'#ff4d6a')+'">'+(gain>=0?'+':'')+gain.toFixed(1)+'kg</div></div>'
+      +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Last RPE</div><div style="font-size:0.9rem;font-weight:800;color:'+accentHex+'">'+(lastRpe||'&#x2014;')+'</div></div>'
+      +'</div>';
+  }
+  var histEl = document.getElementById('lift-chart-history');
+  if (histEl) {
+    histEl.innerHTML = '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Recent sessions</div>'
+      + data.slice().reverse().slice(0,10).map(function(d){
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px">'
+            +'<span style="font-size:0.78rem;color:var(--muted)">'+d.date+'</span>'
+            +'<div style="display:flex;gap:12px">'+(d.avgRpe?'<span style="font-size:0.72rem;color:var(--muted)">RPE '+d.avgRpe+'</span>':'')
+            +'<span style="font-size:0.88rem;font-weight:700;color:var(--text)">'+d.topWeight+'kg</span></div></div>';
+        }).join('');
+  }
 }
 
 function renderWorkoutHistory() {
@@ -9951,6 +10407,7 @@ function openWorkoutSummary(wKey) {
       save(); overlay.remove();
       checkWorkoutMilestone();
       renderStreakBar();
+      checkCurrentMonthMemory(currentProfile);
     }
     if (e.target.id === 'close-summary-btn') overlay.remove();
   });
@@ -10762,6 +11219,15 @@ function scheduleNotifAt(hour, minute, title, body, tag) {
 
 function shouldFireNotif(tag) {
   if (!currentProfile) return true;
+  var today2 = todayKey();
+  if (tag === 'weigh_in') {
+    var wLogs = getWeightLogs(currentProfile);
+    return !wLogs.some(function(e){ return e.date && e.date.slice(0,10) === today2; });
+  }
+  if (tag === 'steps_rest_day') {
+    var stepLog2 = (userPrefs[currentProfile]||{}).stepLogs || {};
+    return !stepLog2[today2];
+  }
   const today = todayKey();
   // Suppress if already actioned
   if (tag.startsWith('supps_morning')) {
@@ -10787,34 +11253,106 @@ function shouldFireNotif(tag) {
   return true;
 }
 
+function getNotifPrefs() {
+  return (userPrefs[currentProfile] || {}).notifPrefs || { supplements:true, weighIn:true, meals:true, steps:true, prep:true };
+}
+
+function renderNotifToggles() {
+  var container = document.getElementById('notif-toggles-list');
+  var banner    = document.getElementById('notif-banner-inline');
+  if (!container) return;
+  if (notifPermission !== 'granted') {
+    if (banner) banner.innerHTML = notifPermission === 'denied'
+      ? '<div class="notif-banner denied" style="margin-bottom:12px"><span class="notif-icon">&#x1F514;</span><span class="notif-text">Notifications blocked. Go to Settings &rarr; Safari &rarr; Notifications to enable.</span></div>'
+      : '<div class="notif-banner" style="margin-bottom:12px"><span class="notif-icon">&#x1F514;</span><span class="notif-text">Enable notifications to get reminders.</span><button class="notif-btn" onclick="requestNotificationPermission()">Enable</button></div>';
+    container.innerHTML = '';
+    return;
+  }
+  if (banner) banner.innerHTML = '<div class="notif-banner allowed" style="margin-bottom:12px"><span class="notif-icon">&#x2705;</span><span class="notif-text">Notifications enabled.</span></div>';
+  var prefs = getNotifPrefs();
+  var toggles = [
+    { key:'weighIn',     icon:'&#x2696;&#xFE0F;', label:'Weigh-in reminder',    desc:'Daily reminder at your chosen weigh-in time' },
+    { key:'supplements', icon:'&#x1F48A;',         label:'Supplement reminders', desc:'Morning and pre-bed supplement alerts' },
+    { key:'meals',       icon:'&#x1F37D;&#xFE0F;', label:'Meal reminders',       desc:'Prompts to log each meal through the day' },
+    { key:'steps',       icon:'&#x1F6B6;',         label:'Rest day step nudge',  desc:'3pm reminder on rest days if steps are low' },
+    { key:'prep',        icon:'&#x1F957;',         label:'Prep reminder',        desc:'Evening reminder to prep for tomorrow' },
+  ];
+  container.innerHTML = toggles.map(function(t) {
+    var on = prefs[t.key] !== false;
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">'
+      + '<span style="font-size:1.1rem;flex-shrink:0">' + t.icon + '</span>'
+      + '<div style="flex:1"><div style="font-size:0.85rem;font-weight:600;color:var(--text)">' + t.label + '</div>'
+      + '<div style="font-size:0.72rem;color:var(--muted);margin-top:1px">' + t.desc + '</div></div>'
+      + '<label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">'
+      + '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="toggleNotifPref(&quot;' + t.key + '&quot;,this.checked)" style="opacity:0;width:0;height:0">'
+      + '<span style="position:absolute;cursor:pointer;inset:0;background:' + (on ? 'var(--active)' : 'var(--surface3)') + ';border-radius:22px;transition:0.2s;border:1px solid var(--border)">'
+      + '<span style="position:absolute;height:16px;width:16px;left:' + (on ? '20' : '2') + 'px;bottom:2px;background:#fff;border-radius:50%;transition:0.2s"></span></span>'
+      + '</label></div>';
+  }).join('');
+}
+
+function toggleNotifPref(key, value) {
+  if (!userPrefs[currentProfile]) userPrefs[currentProfile] = {};
+  if (!userPrefs[currentProfile].notifPrefs) userPrefs[currentProfile].notifPrefs = {};
+  userPrefs[currentProfile].notifPrefs[key] = value;
+  saveAll();
+  scheduleAllNotifications();
+  renderNotifToggles();
+}
+
 function scheduleAllNotifications() {
   if (!currentProfile || notifPermission !== 'granted') return;
-  const p = PROFILES[currentProfile];
+  var p = PROFILES[currentProfile];
+  var prefs = getPrefs(currentProfile);
+  var notifPrefs = getNotifPrefs();
 
-  // Supplement reminders
-  scheduleNotifAt(9, 0,  `💊 ${p.name} — Morning Supplements`, 'Time for creatine, vitamin D and omega-3. Tap to confirm.', 'supps_morning_1');
-  scheduleNotifAt(12, 0, `⚠️ ${p.name} — Supplements not logged`, 'You haven\'t confirmed your morning supplements yet. Get them done before lunch!', 'supps_morning_2');
-  scheduleNotifAt(20, 0, `🌙 ${p.name} — Magnesium time`, 'Time for your pre-bed magnesium. Take 30–60 min before sleep.', 'supps_night_1');
-  scheduleNotifAt(20, 30,`⚠️ ${p.name} — Pre-bed supps not logged`, 'Don\'t forget your magnesium glycinate tonight!', 'supps_night_2');
+  if (notifPrefs.weighIn !== false) {
+    var weighTime = prefs.weighInTime || '07:00';
+    var wParts = weighTime.split(':');
+    var wh = parseInt(wParts[0])||7, wm = parseInt(wParts[1])||0;
+    scheduleNotifAt(wh, wm, p.name + ' — Time to weigh in', 'Log your weight now for an accurate 7-day average.', 'weigh_in');
+  }
 
-  // Meal reminders (approximate eating windows)
-  const mealTimes = [
-    [7, 30, 0,  'Breakfast'],
-    [10, 30, 1, 'Mid-Morning'],
-    [13, 0, 2,  'Lunch'],
-    [16, 0, 3,  'Pre-Workout / Snack'],
-    [18, 30, 4, 'Dinner'],
-    [21, 0, 5,  'Pre-Bed / Evening'],
-  ];
-  mealTimes.forEach(([h, m, idx, label]) => {
-    scheduleNotifAt(h, m, `🍽️ ${p.name} — Time for ${label}`, `Don\'t forget to eat and log your ${label} to stay on track.`, `meal_${idx}`);
-    // Follow-up if not logged by 2 hours after
-    scheduleNotifAt(h+2, m, `⏰ ${p.name} — ${label} not logged`, `You haven\'t confirmed ${label} yet. Make sure you eat and hit your protein target.`, `meal_${idx}_reminder`);
-  });
+  if (notifPrefs.supplements !== false) {
+    var userSupps = getSupplements(currentProfile);
+    var morningSupps    = userSupps.filter(function(s){ return s.timing === 'morning'; });
+    var nightSupps      = userSupps.filter(function(s){ return s.timing === 'night'; });
+    var preworkoutSupps = userSupps.filter(function(s){ return s.timing === 'preworkout'; });
+    if (morningSupps.length) {
+      var mNames = morningSupps.slice(0,3).map(function(s){ return s.name.split(' ')[0]; }).join(', ');
+      scheduleNotifAt(8, 0,  p.name + ' — Morning supplements', mNames + ' and your morning stack. Log them in the app.', 'supps_morning_1');
+      scheduleNotifAt(11, 0, p.name + ' — Supplements not logged', 'You haven\'t confirmed your morning supplements yet.', 'supps_morning_2');
+    }
+    if (preworkoutSupps.length) {
+      scheduleNotifAt(16, 30, p.name + ' — Pre-workout supplements', 'Time for your pre-workout stack before your session.', 'supps_preworkout');
+    }
+    if (nightSupps.length) {
+      var nNames = nightSupps.slice(0,3).map(function(s){ return s.name.split(' ')[0]; }).join(', ');
+      scheduleNotifAt(21, 0, p.name + ' — Pre-bed supplements', nNames + ' — take 30–60 min before sleep.', 'supps_night_1');
+      scheduleNotifAt(22, 0, p.name + ' — Pre-bed supps not logged', 'Don\'t forget your pre-bed supplements tonight.', 'supps_night_2');
+    }
+  }
 
-  // Prep confirmation reminder (previous evening 19:30)
-  scheduleNotifAt(19, 30, `🥗 ${p.name} — Prep for tomorrow`, 'Have you prepped meals and supplements for tomorrow? Confirm in the app to stay on track.', 'prep_confirm');
-  scheduleNotifAt(20, 0, `⚠️ ${p.name} — Prep not confirmed`, 'No prep confirmation yet for tomorrow. Quick 10 min now saves you tomorrow morning!', 'prep_remind');
+  if (notifPrefs.meals !== false) {
+    var mealTimes = [[7,30,0,'Breakfast'],[10,30,1,'Mid-Morning'],[13,0,2,'Lunch'],[16,0,3,'Pre-Workout / Snack'],[18,30,4,'Dinner'],[21,0,5,'Pre-Bed / Evening']];
+    mealTimes.forEach(function(row) {
+      scheduleNotifAt(row[0], row[1], p.name + ' — Time for ' + row[3], 'Don\'t forget to eat and log your ' + row[3] + '.', 'meal_' + row[2]);
+      scheduleNotifAt(row[0]+2, row[1], p.name + ' — ' + row[3] + ' not logged', 'You haven\'t confirmed ' + row[3] + ' yet. Make sure you hit your protein target.', 'meal_' + row[2] + '_reminder');
+    });
+  }
+
+  if (notifPrefs.steps !== false) {
+    var dayIdx2 = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    var todayWorkout2 = typeof getWorkoutForDayFromPlan === 'function' ? getWorkoutForDayFromPlan(currentProfile, dayIdx2) : null;
+    if (!todayWorkout2) {
+      scheduleNotifAt(15, 0, p.name + ' — Step check', 'Rest day — have you hit 7,000 steps yet? Movement accelerates recovery.', 'steps_rest_day');
+    }
+  }
+
+  if (notifPrefs.prep !== false) {
+    scheduleNotifAt(19, 30, p.name + ' — Prep for tomorrow', 'Have you prepped meals for tomorrow? Confirm in the app.', 'prep_confirm');
+    scheduleNotifAt(20, 30, p.name + ' — Prep not confirmed', 'No prep confirmation yet for tomorrow. 10 minutes now saves you tomorrow morning.', 'prep_remind');
+  }
 }
 
 function todayKey() {
@@ -11135,6 +11673,22 @@ function getCoachContext(profile) {
     if (motStyle.pushVsCoach) motParts.push(motStyle.pushVsCoach);
     if (motParts.length) permLines.push('Motivation: ' + motParts.join(', '));
   }
+  // Beyond-scale goals
+  if (pp.beyondGoals && pp.beyondGoals.length) {
+    const goalMap = { energy:'more energy', confidence:'confidence', performance:'athletic performance', health:'long-term health', aesthetics:'aesthetics', mentalhealth:'mental health' };
+    permLines.push('Beyond-scale goals: ' + pp.beyondGoals.map(function(g){ return goalMap[g]||g; }).join(', '));
+  }
+  const trainMap2 = { never:'never trained before', under1:'less than 1 year training', '1to3':'1-3 years experience', '3plus':'3+ years experience' };
+  if (pp.trainHistory && trainMap2[pp.trainHistory]) permLines.push('Training background: ' + trainMap2[pp.trainHistory]);
+  const stressMap2 = { low:'low stress', moderate:'moderate stress', high:'high stress', variable:'variable stress' };
+  const sleepMap2  = { poor:'poor sleep', ok:'OK sleep', good:'good sleep', great:'great sleep' };
+  if (pp.stressLevel && stressMap2[pp.stressLevel]) permLines.push('Current stress: ' + stressMap2[pp.stressLevel]);
+  if (pp.sleepQuality && sleepMap2[pp.sleepQuality]) permLines.push('Sleep quality: ' + sleepMap2[pp.sleepQuality]);
+  const gymMap2 = { comfortable:'comfortable in the gym', alittle:'a little self-conscious in the gym', anxious:'quite anxious in the gym', nogym:'trains outside a gym' };
+  if (pp.gymComfort && gymMap2[pp.gymComfort]) permLines.push('Gym comfort: ' + gymMap2[pp.gymComfort]);
+  const cookMap2 = { hate:'hates cooking — needs simple meals', basic:'basic cooking only', decent:'decent in the kitchen', love:'loves cooking' };
+  if (pp.cookingConfidence && cookMap2[pp.cookingConfidence]) permLines.push('Cooking: ' + cookMap2[pp.cookingConfidence]);
+
   // Fallback: legacy summary field
   if (!permLines.length && pp.summary) permLines.push(pp.summary);
 
@@ -11173,6 +11727,19 @@ function getCoachContext(profile) {
         + '  ' + recent.length + ' sessions · ' + totalMins + ' min total · Zone 2: ' + zone2Mins + ' min · High intensity: ' + hiMins + ' min\n'
         + '  Activities: ' + topActs.join(', '));
     }
+  }
+
+  // ── STRENGTH TARGETS ──
+  const strengthTargets = prefs.strengthTargets || [];
+  if (strengthTargets.length) {
+    const strengthLines = strengthTargets.map(function(t) {
+      var status = t.achieved
+        ? t.liftName + ': achieved ' + t.targetKg + 'kg (on ' + (t.achievedAt || 'unknown') + ')'
+        : t.liftName + ': targeting ' + t.targetKg + 'kg'
+            + (t.currentBest ? ', current best ' + t.currentBest + 'kg' : ', not yet logged');
+      return '  ' + status;
+    });
+    lines.push('STRENGTH GOALS:\n' + strengthLines.join('\n'));
   }
 
   return lines.length ? '\n' + lines.join('\n\n') + '\n' : '';
@@ -11247,6 +11814,24 @@ TOTAL VOLUME TREND: ${sessions.map(function(s){ return s.date.split('T')[0] + ':
 
 EXERCISE PROGRESSION:
 ${progressionLines.join('\n') || 'No progression data'}
+
+STRENGTH GOALS:
+${(function() {
+  var targets = prefs.strengthTargets || [];
+  if (!targets.length) return 'None set';
+  return targets.map(function(t) {
+    var best = 0;
+    sessions.forEach(function(s) {
+      (s.exercises||[]).forEach(function(ex) {
+        if (ex.name&&ex.name.toLowerCase().includes(t.liftName.toLowerCase())) {
+          (ex.sets||[]).forEach(function(st){ if(st.done&&st.weight&&st.weight>best) best=st.weight; });
+        }
+      });
+    });
+    var pct = best>0?Math.round(best/t.targetKg*100):null;
+    return t.liftName+': target '+t.targetKg+'kg'+(best>0?', best this month '+best+'kg ('+pct+'%)':', not logged')+(t.achieved?' — ACHIEVED':'');
+  }).join('\n');
+})()}
 
 WEEKLY FEEDBACK:
 ${feedbackEntries.join('\n') || 'No feedback submitted'}
@@ -11337,7 +11922,6 @@ function parsePermanentFlagsFromNotes(profile, notes) {
 }
 
 function checkMonthlyMemoryPrompt(profile) {
-  // Called on app load — check if last month's memory is missing and prompt user
   const apiKey = getApiKey();
   if (!apiKey) return;
   const now = new Date();
@@ -11345,13 +11929,590 @@ function checkMonthlyMemoryPrompt(profile) {
   const lastYM = lastMonth.getFullYear() + '-' + String(lastMonth.getMonth() + 1).padStart(2, '0');
   const mem = coachMemory[profile] || {};
   const hasLastMonth = (mem.monthly || {})[lastYM];
-  const hasData = (workoutHistory[profile] || []).some(function(s){ return s.date && s.date.startsWith(lastYM); });
-  if (!hasLastMonth && hasData && now.getDate() <= 7) {
-    // First week of new month — nudge to generate last month's memory
-    setTimeout(function() {
-      showToast('📋 Generate your ' + lastYM + ' coach memory in Body → Coach Profile');
-    }, 3000);
+  if (hasLastMonth) return;
+  const sessions = (workoutHistory[profile] || []).filter(function(s){ return s.date && s.date.startsWith(lastYM); });
+  if (sessions.length < 4) return;
+  const attemptKey = 'recomp_mem_attempt_' + profile + '_' + lastYM;
+  if (storageGet(attemptKey)) return;
+  storageSet(attemptKey, '1');
+  setTimeout(function() {
+    showToast('🧠 Building your ' + lastYM + ' coach memory…');
+    generateCoachMemory(profile, lastYM);
+  }, 4000);
+}
+
+function checkCurrentMonthMemory(profile) {
+  const apiKey = getApiKey();
+  if (!apiKey) return;
+  const now = new Date();
+  if (now.getDate() < 21) return;
+  const thisYM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const mem = coachMemory[profile] || {};
+  if ((mem.monthly || {})[thisYM]) return;
+  const sessions = (workoutHistory[profile] || []).filter(function(s){ return s.date && s.date.startsWith(thisYM); });
+  if (sessions.length < 8) return;
+  const attemptKey = 'recomp_mem_attempt_' + profile + '_' + thisYM;
+  if (storageGet(attemptKey)) return;
+  storageSet(attemptKey, '1');
+  setTimeout(function() {
+    showToast('🧠 3 weeks in — building your monthly coach memory…');
+    generateCoachMemory(profile, thisYM);
+  }, 2000);
+}
+
+const OB_STRENGTH_LIFTS = [
+  { id:'bench',    name:'Bench Press',    icon:'🏋️' },
+  { id:'squat',    name:'Back Squat',     icon:'🦵' },
+  { id:'deadlift', name:'Deadlift',       icon:'💪' },
+  { id:'ohp',      name:'Overhead Press', icon:'🙌' },
+  { id:'row',      name:'Barbell Row',    icon:'🔄' },
+];
+
+// ── PROGRESS PHOTOS ──────────────────────────────────────────────────────────
+// Photos stored as base64 in localStorage under progressPhotos[profile]
+// Each entry: { id, date, angle, dataUrl, note, weight }
+// Never leave the device unless user taps AI commentary (goes to Anthropic API)
+
+const PHOTO_ANGLES = ['Front', 'Side', 'Back', 'Flexing'];
+
+function getProgressPhotos(profile) {
+  try {
+    var raw = storageGet('progress_photos_' + profile);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveProgressPhotos(profile, photos) {
+  storageSet('progress_photos_' + profile, JSON.stringify(photos));
+}
+
+function toggleProgressPhotosPanel() {
+  var panel = document.getElementById('progress-photos-panel');
+  var btn = document.getElementById('progress-photos-toggle-btn');
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (btn) btn.textContent = open ? 'Show ▾' : 'Hide ▴';
+  if (!open) renderProgressPhotos(currentProfile);
+}
+
+function renderProgressPhotos(profile) {
+  var el = document.getElementById('progress-photos-content');
+  if (!el) return;
+  var photos = getProgressPhotos(profile);
+
+  if (!photos.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--muted);font-size:0.82rem">'
+      + '<div style="font-size:2rem;margin-bottom:10px">📸</div>'
+      + '<div style="font-weight:600;color:var(--text);margin-bottom:6px">No progress photos yet</div>'
+      + '<div style="font-size:0.75rem;line-height:1.5;margin-bottom:16px">Stored privately on your device. The scale often lies — photos show the truth.</div>'
+      + '<button onclick="openProgressPhotoUpload()" style="padding:10px 20px;background:var(--max-light);color:#000;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer">Add first photo</button>'
+      + '</div>';
+    return;
   }
+
+  // Group by angle
+  var byAngle = {};
+  PHOTO_ANGLES.forEach(function(a) { byAngle[a] = []; });
+  photos.forEach(function(p) {
+    if (byAngle[p.angle]) byAngle[p.angle].push(p);
+    else byAngle['Front'].push(p);
+  });
+
+  var html = '';
+
+  // Filter tabs
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="photo-angle-tabs">'
+    + ['All'].concat(PHOTO_ANGLES.filter(function(a){ return byAngle[a].length > 0; })).map(function(a, i) {
+        return '<button onclick="filterPhotoAngle(&quot;' + a + '&quot;,this)" class="meal-lib-tab' + (i === 0 ? ' active' : '') + '">' + a + '</button>';
+      }).join('')
+    + '</div>';
+
+  html += '<div id="photo-grid">';
+
+  // Sort all photos newest first
+  var sorted = photos.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+  sorted.forEach(function(photo) {
+    html += '<div class="photo-card" data-angle="' + photo.angle + '" data-id="' + photo.id + '" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px">'
+      + '<div style="position:relative">'
+      + '<img src="' + photo.dataUrl + '" style="width:100%;display:block;max-height:280px;object-fit:cover;cursor:pointer" onclick="openPhotoViewer(&quot;' + photo.id + '&quot;,' + JSON.stringify(profile) + ')" loading="lazy">'
+      + '<div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.65rem;font-weight:700;padding:3px 8px;border-radius:6px">' + photo.angle + '</div>'
+      + '</div>'
+      + '<div style="padding:10px 12px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+      + '<div style="font-size:0.78rem;font-weight:700;color:var(--text)">' + photo.date + '</div>'
+      + (photo.weight ? '<div style="font-size:0.72rem;color:var(--muted)">' + photo.weight + 'kg</div>' : '')
+      + '</div>'
+      + (photo.note ? '<div style="font-size:0.72rem;color:var(--muted);line-height:1.4;margin-bottom:8px">' + photo.note + '</div>' : '')
+      + '<div style="display:flex;gap:6px">'
+      + '<button onclick="openPhotoViewer(&quot;' + photo.id + '&quot;,' + JSON.stringify(profile) + ')" style="flex:1;padding:6px;border-radius:7px;background:var(--surface3);border:1px solid var(--border);font-size:0.72rem;color:var(--muted);cursor:pointer">View</button>'
+      + '<button onclick="deleteProgressPhoto(&quot;' + photo.id + '&quot;,' + JSON.stringify(profile) + ')" style="padding:6px 10px;border-radius:7px;background:none;border:1px solid var(--border);font-size:0.72rem;color:var(--muted);cursor:pointer">✕</button>'
+      + '</div></div></div>';
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function filterPhotoAngle(angle, btn) {
+  // Update active tab
+  document.querySelectorAll('#photo-angle-tabs .meal-lib-tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  // Show/hide cards
+  document.querySelectorAll('.photo-card').forEach(function(card) {
+    card.style.display = (angle === 'All' || card.dataset.angle === angle) ? '' : 'none';
+  });
+}
+
+function openPhotoComparison() {
+  var profile = currentProfile;
+  var photos = getProgressPhotos(profile);
+  if (photos.length < 2) { showToast('Add at least 2 photos to compare'); return; }
+  var existing = document.getElementById('photo-compare-overlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div'); overlay.className='modal-overlay open'; overlay.id='photo-compare-overlay'; overlay.style.cssText='background:rgba(0,0,0,0.92)';
+  var modal = document.createElement('div'); modal.className='modal'; modal.style.cssText='max-height:92vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; modal.appendChild(handle);
+  var title = document.createElement('div'); title.className='modal-title'; title.textContent='Compare Photos'; modal.appendChild(title);
+  var sorted = photos.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+  function makeSelect(id, defaultIdx) {
+    var sel = document.createElement('select');
+    sel.id = id;
+    sel.style.cssText = 'flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.75rem;color:var(--text);font-family:var(--font-body)';
+    sorted.forEach(function(ph, i) {
+      var opt = document.createElement('option'); opt.value=ph.id; opt.textContent=ph.date+' '+ph.angle;
+      if (i===defaultIdx) opt.selected=true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', renderCmp);
+    return sel;
+  }
+  var selRow = document.createElement('div'); selRow.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:14px';
+  selRow.appendChild(makeSelect('cmp-left', sorted.length>1 ? sorted.length-1 : 0));
+  var vs = document.createElement('span'); vs.style.cssText='font-size:0.72rem;font-weight:700;color:var(--muted);flex-shrink:0'; vs.textContent='vs'; selRow.appendChild(vs);
+  selRow.appendChild(makeSelect('cmp-right', 0));
+  modal.appendChild(selRow);
+  var display = document.createElement('div'); display.id='cmp-display'; display.style.cssText='margin-bottom:14px'; modal.appendChild(display);
+  var aiBtn = document.createElement('button'); aiBtn.className='ai-feature-btn'; aiBtn.style.cssText='width:100%;padding:11px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px'; aiBtn.textContent='&#x1F9E0; Get AI comparison commentary';
+  aiBtn.addEventListener('click', function(){ runCmpAI(profile); }); modal.appendChild(aiBtn);
+  var aiResult = document.createElement('div'); aiResult.id='cmp-ai-result'; modal.appendChild(aiResult);
+  var closeBtn = document.createElement('button'); closeBtn.style.cssText='width:100%;padding:11px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer'; closeBtn.textContent='Close';
+  closeBtn.addEventListener('click', function(){ overlay.remove(); }); modal.appendChild(closeBtn);
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  function renderCmp() {
+    var L = photos.find(function(p){ return p.id===(document.getElementById('cmp-left')||{}).value; });
+    var R = photos.find(function(p){ return p.id===(document.getElementById('cmp-right')||{}).value; });
+    if (!L||!R) return;
+    var d = document.getElementById('cmp-display');
+    if (!d) return;
+    d.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      +'<div><img src="'+L.dataUrl+'" style="width:100%;border-radius:10px;display:block;object-fit:cover;max-height:220px">'
+        +'<div style="text-align:center;font-size:0.7rem;color:var(--muted);margin-top:4px">'+L.date+' &middot; '+L.angle+'</div>'
+        +(L.weight?'<div style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text)">'+L.weight+'kg</div>':'')+
+      '</div>'
+      +'<div><img src="'+R.dataUrl+'" style="width:100%;border-radius:10px;display:block;object-fit:cover;max-height:220px">'
+        +'<div style="text-align:center;font-size:0.7rem;color:var(--muted);margin-top:4px">'+R.date+' &middot; '+R.angle+'</div>'
+        +(R.weight?'<div style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text)">'+R.weight+'kg</div>':'')+
+      '</div></div>';
+  }
+  renderCmp();
+}
+
+async function runCmpAI(profile) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showToast('Add an API key in Settings to use AI commentary'); return; }
+  var photos = getProgressPhotos(profile);
+  var L = photos.find(function(p){ return p.id===(document.getElementById('cmp-left')||{}).value; });
+  var R = photos.find(function(p){ return p.id===(document.getElementById('cmp-right')||{}).value; });
+  if (!L||!R) return;
+  var resultEl = document.getElementById('cmp-ai-result');
+  if (resultEl) resultEl.innerHTML='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.78rem;color:var(--muted)">&#x1F9E0; Comparing your photos...</div>';
+  try {
+    var p2 = PROFILES[profile], prefs2 = getPrefs(profile);
+    var wDiff = (L.weight&&R.weight) ? (R.weight-L.weight).toFixed(1) : null;
+    var sys = 'You are a body composition coach comparing two progress photos. Be specific about visible changes in muscle definition, body proportions and posture. Be encouraging. Do not claim to measure body fat. 4-5 sentences max.';
+    var txt = 'Athlete: '+p2.name+' Goal: '+(prefs2.goal||'recomp')+'\n'
+      +'LEFT: '+L.date+' '+L.angle+(L.weight?' '+L.weight+'kg':'')+'\n'
+      +'RIGHT: '+R.date+' '+R.angle+(R.weight?' '+R.weight+'kg':'')+'\n'
+      +(wDiff?'Weight change: '+(wDiff>=0?'+':'')+wDiff+'kg\n':'')+'\n'
+      +'Describe visible changes between the two photos.';
+    var resp = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:350,system:sys,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:L.dataUrl.split(';')[0].replace('data:',''),data:L.dataUrl.split(',')[1]}},
+        {type:'image',source:{type:'base64',media_type:R.dataUrl.split(';')[0].replace('data:',''),data:R.dataUrl.split(',')[1]}},
+        {type:'text',text:txt}
+      ]}]})
+    });
+    var data = await resp.json();
+    var text = data.content&&data.content[0]?data.content[0].text.trim():'';
+    if (text&&resultEl) resultEl.innerHTML='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px">'
+      +'<div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--active);margin-bottom:6px">&#x1F9E0; Coach comparison</div>'
+      +'<div style="font-size:0.82rem;color:var(--text);line-height:1.65">'+text+'</div>'
+      +'<div style="font-size:0.65rem;color:var(--muted);margin-top:8px">Photos sent to Anthropic API for this analysis only.</div></div>';
+  } catch(e) { if(resultEl) resultEl.innerHTML='<div style="font-size:0.78rem;color:var(--muted);padding:8px 0">Could not generate comparison. Try again.</div>'; }
+}
+
+function openProgressPhotoUpload() {
+  var existing = document.getElementById('photo-upload-overlay');
+  if (existing) existing.remove();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'photo-upload-overlay';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'max-height:88vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; modal.appendChild(handle);
+  var title = document.createElement('div'); title.className='modal-title'; title.textContent='Add Progress Photo'; modal.appendChild(title);
+
+  // Privacy note
+  var privacy = document.createElement('div');
+  privacy.style.cssText = 'font-size:0.72rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:16px;line-height:1.5';
+  privacy.textContent = '🔒 Photos are stored only on this device. They never leave unless you tap "Get AI commentary".';
+  modal.appendChild(privacy);
+
+  // Angle picker
+  var angleLabel = document.createElement('div');
+  angleLabel.style.cssText = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px';
+  angleLabel.textContent = 'Angle';
+  modal.appendChild(angleLabel);
+  var angleGrid = document.createElement('div');
+  angleGrid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px';
+  var selectedAngle = 'Front';
+  PHOTO_ANGLES.forEach(function(a, i) {
+    var btn = document.createElement('button');
+    btn.style.cssText = 'padding:8px 4px;border-radius:8px;font-size:0.72rem;cursor:pointer;font-family:var(--font-body);text-align:center;border:1px solid var(--border);background:' + (i===0?'rgba(0,255,135,0.12)':'var(--surface2)') + ';color:' + (i===0?'var(--max-light)':'var(--muted)');
+    btn.textContent = a;
+    btn.addEventListener('click', function() {
+      selectedAngle = a;
+      angleGrid.querySelectorAll('button').forEach(function(b){ b.style.background='var(--surface2)'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)'; });
+      btn.style.background='rgba(0,255,135,0.12)'; btn.style.color='var(--max-light)'; btn.style.borderColor='rgba(0,255,135,0.4)';
+    });
+    angleGrid.appendChild(btn);
+  });
+  modal.appendChild(angleGrid);
+
+  // Photo picker
+  var pickLabel = document.createElement('div');
+  pickLabel.style.cssText = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px';
+  pickLabel.textContent = 'Photo';
+  modal.appendChild(pickLabel);
+
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.cssText = 'display:none';
+  modal.appendChild(fileInput);
+
+  var preview = document.createElement('div');
+  preview.id = 'photo-upload-preview';
+  preview.style.cssText = 'width:100%;height:180px;background:var(--surface2);border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:14px;overflow:hidden;position:relative';
+  preview.innerHTML = '<div style="text-align:center;color:var(--muted)"><div style="font-size:2rem;margin-bottom:6px">📷</div><div style="font-size:0.78rem">Tap to choose photo</div></div>';
+  preview.addEventListener('click', function(){ fileInput.click(); });
+  modal.appendChild(preview);
+
+  var selectedDataUrl = null;
+  fileInput.addEventListener('change', function() {
+    var file = fileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      selectedDataUrl = e.target.result;
+      preview.innerHTML = '<img src="' + selectedDataUrl + '" style="width:100%;height:100%;object-fit:cover">';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Optional note
+  var noteLabel = document.createElement('div');
+  noteLabel.style.cssText = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px';
+  noteLabel.textContent = 'Note (optional)';
+  modal.appendChild(noteLabel);
+  var noteInput = document.createElement('textarea');
+  noteInput.placeholder = 'e.g. Week 8, feeling stronger, waist down 2cm';
+  noteInput.style.cssText = 'width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:0.82rem;color:var(--text);font-family:var(--font-body);min-height:56px;resize:none;box-sizing:border-box;margin-bottom:16px';
+  modal.appendChild(noteInput);
+
+  var saveBtn = document.createElement('button');
+  saveBtn.style.cssText = 'width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head);margin-bottom:8px';
+  saveBtn.textContent = 'Save photo';
+  saveBtn.addEventListener('click', function() {
+    if (!selectedDataUrl) { showToast('Please choose a photo first'); return; }
+    var profile = currentProfile;
+    var photos = getProgressPhotos(profile);
+    var logs = getWeightLogs(profile);
+    var latestWeight = logs.length ? logs[logs.length-1].weight : null;
+    var id = 'photo_' + Date.now();
+    photos.push({
+      id: id,
+      date: new Date().toISOString().slice(0,10),
+      angle: selectedAngle,
+      dataUrl: selectedDataUrl,
+      note: noteInput.value.trim(),
+      weight: latestWeight,
+    });
+    saveProgressPhotos(profile, photos);
+    overlay.remove();
+    renderProgressPhotos(profile);
+    showToast('📸 Photo saved');
+  });
+  modal.appendChild(saveBtn);
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', function(){ overlay.remove(); });
+  modal.appendChild(cancelBtn);
+
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function openPhotoViewer(photoId, profile) {
+  var photos = getProgressPhotos(profile);
+  var photo = photos.find(function(p){ return p.id === photoId; });
+  if (!photo) return;
+
+  var existing = document.getElementById('photo-viewer-overlay');
+  if (existing) existing.remove();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'photo-viewer-overlay';
+  overlay.style.cssText = 'background:rgba(0,0,0,0.92)';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'max-height:92vh;overflow-y:auto;padding:0';
+
+  modal.innerHTML = '<div class="modal-handle" style="margin:10px auto 0"></div>'
+    + '<img src="' + photo.dataUrl + '" style="width:100%;display:block;max-height:55vh;object-fit:contain;background:#000">'
+    + '<div style="padding:14px 16px">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+    + '<div style="font-size:0.88rem;font-weight:700;color:var(--text)">' + photo.date + ' · ' + photo.angle + '</div>'
+    + (photo.weight ? '<div style="font-size:0.78rem;color:var(--muted)">' + photo.weight + 'kg</div>' : '')
+    + '</div>'
+    + (photo.note ? '<div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:12px">' + photo.note + '</div>' : '')
+    + '<div id="photo-ai-commentary" style="margin-bottom:12px"></div>'
+    + '<button onclick="getPhotoAICommentary(&quot;' + photo.id + '&quot;,&quot;' + profile + '&quot;)" class="ai-feature-btn" style="width:100%;padding:11px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px">🧠 Get coach commentary</button>'
+    + '<button onclick="document.getElementById(&quot;photo-viewer-overlay&quot;).remove()" style="width:100%;padding:10px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer">Close</button>'
+    + '</div>';
+
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+async function getPhotoAICommentary(photoId, profile) {
+  var apiKey = getApiKey();
+  if (!apiKey) { showToast('Add an API key in Settings to use AI commentary'); return; }
+
+  var photos = getProgressPhotos(profile);
+  var photo = photos.find(function(p){ return p.id === photoId; });
+  if (!photo) return;
+
+  var commentaryEl = document.getElementById('photo-ai-commentary');
+  if (!commentaryEl) return;
+  commentaryEl.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.78rem;color:var(--muted);line-height:1.6">🧠 Your coach is reviewing this photo…</div>';
+
+  try {
+    var prefs = getPrefs(profile);
+    var p = PROFILES[profile];
+    var logs = getWeightLogs(profile);
+    var currentWeight = logs.length ? logs[logs.length-1].weight : null;
+
+    // Find previous photo of same angle for comparison context
+    var sameAngle = photos.filter(function(ph){ return ph.angle === photo.angle && ph.id !== photo.id; })
+      .sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var prevPhoto = sameAngle.length ? sameAngle[sameAngle.length-1] : null;
+
+    var systemPrompt = 'You are a body composition coach providing honest, supportive feedback on a progress photo. '
+      + 'Focus on observable changes in physique — muscle definition, body proportions, posture. '
+      + 'Be specific and encouraging. Never make negative comments about body size. '
+      + 'Do not claim to measure body fat percentage from photos — you cannot do this accurately. '
+      + 'Keep response to 3-4 sentences.';
+
+    var userText = 'Athlete: ' + p.name + ' · Goal: ' + (prefs.goal||'body recomposition') + '\n'
+      + 'Photo date: ' + photo.date + ' · Angle: ' + photo.angle + '\n'
+      + (currentWeight ? 'Current weight: ' + currentWeight + 'kg\n' : '')
+      + (photo.weight ? 'Weight at photo: ' + photo.weight + 'kg\n' : '')
+      + (photo.note ? 'Their note: ' + photo.note + '\n' : '')
+      + (prevPhoto ? 'Previous ' + photo.angle + ' photo was on ' + prevPhoto.date + '. Compare the two images for visible changes.\n' : 'This is their first ' + photo.angle + ' photo.\n')
+      + '\nProvide specific, honest coaching feedback on what you can observe in this photo.';
+
+    // Build message content - include image
+    var messageContent = [
+      { type: 'image', source: { type: 'base64', media_type: photo.dataUrl.split(';')[0].replace('data:',''), data: photo.dataUrl.split(',')[1] } },
+    ];
+
+    // Add previous photo if available
+    if (prevPhoto) {
+      messageContent.push({ type: 'image', source: { type: 'base64', media_type: prevPhoto.dataUrl.split(';')[0].replace('data:',''), data: prevPhoto.dataUrl.split(',')[1] } });
+      messageContent.push({ type: 'text', text: 'First image is the current photo (' + photo.date + '). Second image is the previous ' + photo.angle + ' photo (' + prevPhoto.date + '). ' + userText });
+    } else {
+      messageContent.push({ type: 'text', text: userText });
+    }
+
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: messageContent }]
+      })
+    });
+
+    var data = await resp.json();
+    var text = data.content && data.content[0] ? data.content[0].text.trim() : '';
+
+    if (text) {
+      commentaryEl.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:4px">'
+        + '<div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--active);margin-bottom:6px">🧠 Coach commentary</div>'
+        + '<div style="font-size:0.82rem;color:var(--text);line-height:1.65">' + text + '</div>'
+        + '<div style="font-size:0.65rem;color:var(--muted);margin-top:8px">Photos sent to Anthropic API for this analysis only. Not stored externally.</div>'
+        + '</div>';
+    }
+  } catch(e) {
+    if (commentaryEl) commentaryEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);padding:8px 0">Could not generate commentary. Try again.</div>';
+  }
+}
+
+function deleteProgressPhoto(photoId, profile) {
+  if (!confirm('Delete this photo? This cannot be undone.')) return;
+  var photos = getProgressPhotos(profile).filter(function(p){ return p.id !== photoId; });
+  saveProgressPhotos(profile, photos);
+  renderProgressPhotos(profile);
+  showToast('Photo deleted');
+}
+
+function toggleStrengthGoalsPanel() {
+  var panel = document.getElementById('strength-goals-panel');
+  var btn = document.getElementById('strength-goals-toggle-btn');
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (btn) btn.textContent = open ? 'Show ▾' : 'Hide ▴';
+  if (!open) renderStrengthDashboard(currentProfile);
+}
+
+function renderStrengthDashboard(profile) {
+  var el = document.getElementById('strength-goals-content');
+  if (!el) return;
+  var prefs = getPrefs(profile);
+  var targets = prefs.strengthTargets || [];
+  if (!targets.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--muted);font-size:0.82rem">No strength goals set yet.<br><button onclick="openStrengthGoalEditor()" style="margin-top:10px;padding:8px 16px;background:var(--max-light);color:#000;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer">Set a goal →</button></div>';
+    return;
+  }
+  var liftToExercise = { bench:['Barbell Bench Press','Bench Press'], squat:['Barbell Back Squat','Back Squat','Squat'], deadlift:['Barbell Deadlift','Deadlift'], ohp:['Overhead Press','Military Press'], row:['Barbell Row','Bent Over Row'] };
+  function getCurrentBest(target) {
+    var names = liftToExercise[target.lift] || [target.liftName];
+    var best = 0;
+    (workoutHistory[profile]||[]).forEach(function(session){
+      (session.exercises||[]).forEach(function(ex){
+        var matches = names.some(function(n){ return ex.name&&ex.name.toLowerCase().includes(n.toLowerCase()); });
+        if (!matches&&target.custom) matches = ex.name&&ex.name.toLowerCase().includes((target.liftName||'').toLowerCase());
+        if (!matches) return;
+        (ex.sets||[]).forEach(function(s){ if(s.done&&!s.skipped&&s.weight&&s.weight>best) best=s.weight; });
+      });
+    });
+    var ormProfile = ormLogs[profile]||{};
+    names.forEach(function(n){ var e=ormProfile[n]; if(e&&e.length){ var l=e[e.length-1]; if(l.weight&&l.weight>best) best=l.weight; } });
+    return best;
+  }
+  var html = '';
+  targets.forEach(function(target) {
+    var currentBest = getCurrentBest(target);
+    var pct = target.targetKg>0 ? Math.min(100,Math.round(currentBest/target.targetKg*100)) : 0;
+    var remaining = target.targetKg-currentBest;
+    var achieved = currentBest>=target.targetKg;
+    html += '<div style="background:var(--surface2);border:1px solid '+(achieved?'var(--active)':'var(--border)')+';border-radius:12px;padding:14px 16px;margin-bottom:10px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+      +'<div><div style="font-size:0.92rem;font-weight:700;color:var(--text)">'+target.liftName+'</div>'
+      +'<div style="font-size:0.7rem;color:var(--muted);margin-top:1px">Target: '+target.targetKg+'kg'+(target.setAt?' · Set '+target.setAt:'')+'</div></div>'
+      +'<div style="text-align:right"><div style="font-size:1.2rem;font-weight:800;color:'+(achieved?'var(--active)':'var(--text)')+'">'+( currentBest>0?currentBest+'kg':'—')+'</div>'
+      +'<div style="font-size:0.65rem;color:var(--muted)">'+(achieved?'🏆 Achieved!':(currentBest>0?remaining.toFixed(1)+'kg to go':'Not logged yet'))+'</div></div></div>'
+      +'<div style="background:var(--surface3);border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px">'
+      +'<div style="height:100%;border-radius:6px;background:var(--active);width:'+pct+'%;transition:width 0.6s ease;opacity:'+(achieved?'1':'0.7')+'"></div></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--muted)">'
+      +'<span>0kg</span><span style="color:var(--active);font-weight:700">'+pct+'%</span><span>'+target.targetKg+'kg</span></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function openStrengthGoalEditor() {
+  var existing = document.getElementById('strength-goal-editor-overlay');
+  if (existing) existing.remove();
+  var prefs = getPrefs(currentProfile);
+  var targets = prefs.strengthTargets || [];
+  var existingMap = {};
+  targets.forEach(function(t){ existingMap[t.lift]=t.targetKg; });
+  var customTarget = targets.find(function(t){ return t.custom; });
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'strength-goal-editor-overlay';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'max-height:88vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; modal.appendChild(handle);
+  var title = document.createElement('div'); title.className='modal-title'; title.textContent='🎯 Strength Goals'; modal.appendChild(title);
+  var desc = document.createElement('div');
+  desc.style.cssText = 'font-size:0.78rem;color:var(--muted);margin-bottom:16px;line-height:1.5';
+  desc.textContent = "Set a target weight for each lift. We will track your progress and celebrate when you hit them.";
+  modal.appendChild(desc);
+  OB_STRENGTH_LIFTS.forEach(function(lift) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px';
+    row.innerHTML = '<span style="font-size:1.2rem;flex-shrink:0">'+lift.icon+'</span>'
+      +'<div style="flex:1;font-size:0.88rem;font-weight:600;color:var(--text)">'+lift.name+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<input type="number" id="sge-'+lift.id+'" value="'+(existingMap[lift.id]||'')+'" placeholder="—" min="0" max="500" step="2.5" style="width:64px;padding:7px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--text);font-family:var(--font-body);text-align:center">'
+      +'<span style="font-size:0.75rem;color:var(--muted)">kg</span></div>';
+    modal.appendChild(row);
+  });
+  var customLabel = document.createElement('div');
+  customLabel.style.cssText = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:12px 0 8px';
+  customLabel.textContent = 'Custom lift (optional)'; modal.appendChild(customLabel);
+  var customRow = document.createElement('div');
+  customRow.style.cssText = 'display:flex;gap:8px;margin-bottom:20px';
+  customRow.innerHTML = '<input type="text" id="sge-custom-name" placeholder="Exercise name" value="'+(customTarget?customTarget.liftName:'')+'" style="flex:1;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;color:var(--text);font-family:var(--font-body)">'
+    +'<input type="number" id="sge-custom-kg" placeholder="kg" value="'+(customTarget?customTarget.targetKg:'')+'" min="0" max="500" step="2.5" style="width:70px;padding:9px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;color:var(--text);font-family:var(--font-body);text-align:center">';
+  modal.appendChild(customRow);
+  var saveBtn = document.createElement('button');
+  saveBtn.style.cssText = 'width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head);margin-bottom:8px';
+  saveBtn.textContent = 'Save goals';
+  saveBtn.addEventListener('click', function() {
+    var newTargets = [];
+    var today = new Date().toISOString().slice(0,10);
+    OB_STRENGTH_LIFTS.forEach(function(lift) {
+      var val = parseFloat((document.getElementById('sge-'+lift.id)||{}).value)||null;
+      if (val&&val>0) {
+        var ex3 = (prefs.strengthTargets||[]).find(function(t){ return t.lift===lift.id; });
+        newTargets.push({ lift:lift.id, liftName:lift.name, targetKg:val, setAt:(ex3?ex3.setAt:today), currentBest:null });
+      }
+    });
+    var cName = (document.getElementById('sge-custom-name')||{}).value||'';
+    var cKg = parseFloat((document.getElementById('sge-custom-kg')||{}).value)||null;
+    if (cName&&cKg>0) newTargets.push({ lift:cName.toLowerCase().replace(/\s+/g,'_'), liftName:cName, targetKg:cKg, setAt:today, currentBest:null, custom:true });
+    if (!userPrefs[currentProfile]) userPrefs[currentProfile]={};
+    userPrefs[currentProfile].strengthTargets = newTargets;
+    saveAll(); overlay.remove(); renderStrengthDashboard(currentProfile);
+    showToast('🎯 Strength goals saved');
+  });
+  modal.appendChild(saveBtn);
+  var cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', function(){ overlay.remove(); });
+  modal.appendChild(cancelBtn);
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 function renderCoachMemoryCard(profile) {
@@ -12244,14 +13405,67 @@ async function submitCheckin() {
   closeCheckinModal();
   renderCheckinBanner();
 
-  // Regenerate personality summary if API key exists and there are meaningful flags
   const apiKey = getApiKey();
   if (apiKey && flags.length > 0) {
     showToast('✅ Check-in saved — updating your coach profile…');
     await regeneratePersonalitySummaryFromCheckin(profile);
   } else {
-    showToast('✅ Check-in saved');
+    showCheckinSummaryModal(checkinAnswers, flags, profile);
   }
+}
+
+function showCheckinSummaryModal(answers, flags, profile) {
+  var existing = document.getElementById('checkin-summary-overlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'checkin-summary-overlay';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'max-height:88vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; modal.appendChild(handle);
+  var title = document.createElement('div'); title.className='modal-title'; title.textContent='Check-in saved'; modal.appendChild(title);
+  var notes = [];
+  if (answers.goalChanged && answers.goalChanged !== 'No — same goal')
+    notes.push({icon:'🎯',text:'Goal updated — your coach will adjust recommendations accordingly.'});
+  if (answers.newInjury && answers.newInjury !== 'No new issues')
+    notes.push({icon:'⚠️',text:'Injury flagged and saved to your permanent profile. The coach will avoid aggravating movements.'});
+  if (answers.lifeChange && answers.lifeChange !== 'All stable')
+    notes.push({icon:'🧠',text:'Life change noted ('+answers.lifeChange+'). Your coach will factor this into intensity and recovery recommendations.'});
+  if (answers.motivation === 'Burning out' || answers.motivation === 'Grinding through it')
+    notes.push({icon:'🔋',text:'Low motivation flagged. Consider a deload week or changing your training split temporarily. Consistency matters more than intensity right now.'});
+  if (answers.motivation === 'Motivated and consistent')
+    notes.push({icon:'💪',text:'You are in a good place. This is when progress compounds — stay consistent and push when you can.'});
+  if (answers.wantMore)
+    notes.push({icon:'📋',text:'Preference noted: '+answers.wantMore+'. Your next plan update will reflect this.'});
+  if (answers.dietChange && answers.dietChange !== 'No change')
+    notes.push({icon:'🥗',text:'Dietary change noted. Regenerate your meal plan to reflect your current preferences.'});
+  if (!notes.length) {
+    notes.push({icon:'📊',text:'Profile updated. Everything looks stable — keep doing what you are doing.'});
+    notes.push({icon:'🔄',text:'Your coach will use this check-in to keep recommendations aligned with where you are right now.'});
+  }
+  var notesWrap = document.createElement('div');
+  notesWrap.style.cssText = 'margin-bottom:20px';
+  notes.forEach(function(note) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px';
+    row.innerHTML = '<span style="font-size:1.1rem;flex-shrink:0">'+note.icon+'</span><span style="font-size:0.82rem;color:var(--text);line-height:1.55">'+note.text+'</span>';
+    notesWrap.appendChild(row);
+  });
+  modal.appendChild(notesWrap);
+  var nextDate = new Date(); nextDate.setDate(nextDate.getDate()+84);
+  var next = document.createElement('div');
+  next.style.cssText = 'font-size:0.72rem;color:var(--muted);text-align:center;margin-bottom:16px';
+  next.textContent = 'Next check-in due: '+nextDate.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  modal.appendChild(next);
+  var closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head)';
+  closeBtn.textContent = 'Got it';
+  closeBtn.addEventListener('click', function(){ overlay.remove(); });
+  modal.appendChild(closeBtn);
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 async function regeneratePersonalitySummaryFromCheckin(profile) {
@@ -12872,6 +14086,71 @@ function togglePrepDate(dateStr, dayIdx) {
   renderPrepQueue();
 }
 
+function getMealLibraryEntry(mealName) {
+  var cats = ['breakfast','lunch','dinner','snack','preBed','preWorkout'];
+  for (var i=0;i<cats.length;i++) {
+    var pool = MEAL_LIBRARY[cats[i]]||[];
+    for (var j=0;j<pool.length;j++) { if(pool[j].name===mealName||pool[j].food===mealName) return pool[j]; }
+  }
+  var userLib = (userPrefs[currentProfile]||{}).mealLibrary||{};
+  var userCats = Object.keys(userLib);
+  for (var k=0;k<userCats.length;k++) {
+    var userPool = userLib[userCats[k]]||[];
+    for (var l=0;l<userPool.length;l++) { if(userPool[l].name===mealName) return userPool[l]; }
+  }
+  return null;
+}
+
+function openPrepMealModal(mealName, food, ingredients, method, protein, calories) {
+  var existing = document.getElementById('prep-meal-modal-overlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'prep-meal-modal-overlay';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'max-height:88vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; modal.appendChild(handle);
+  var title = document.createElement('div'); title.className='modal-title'; title.textContent=mealName; modal.appendChild(title);
+  var macros = document.createElement('div');
+  macros.style.cssText = 'font-size:0.72rem;color:var(--muted);margin-bottom:16px';
+  macros.textContent = protein+'g protein · '+calories+' kcal'; modal.appendChild(macros);
+  if (ingredients) {
+    var ingTitle = document.createElement('div');
+    ingTitle.style.cssText = 'font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--active);margin-bottom:8px';
+    ingTitle.textContent = 'Ingredients'; modal.appendChild(ingTitle);
+    var ingBox = document.createElement('div');
+    ingBox.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px';
+    var ingItems = ingredients.split(',').map(function(i){ return i.trim(); }).filter(Boolean);
+    ingBox.innerHTML = ingItems.map(function(ing,idx){
+      return '<div style="display:flex;align-items:baseline;gap:8px;padding:4px 0;'+(idx<ingItems.length-1?'border-bottom:1px solid var(--border)':'')+';font-size:0.82rem;color:var(--text)">'
+        +'<span style="color:var(--active);flex-shrink:0">·</span><span>'+ing+'</span></div>';
+    }).join('');
+    modal.appendChild(ingBox);
+  }
+  if (method) {
+    var methTitle = document.createElement('div');
+    methTitle.style.cssText = 'font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--active);margin-bottom:8px';
+    methTitle.textContent = 'How to make it'; modal.appendChild(methTitle);
+    var methBox = document.createElement('div');
+    methBox.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text);line-height:1.65';
+    methBox.textContent = method; modal.appendChild(methBox);
+  }
+  if (!ingredients&&!method&&food) {
+    var foodBox = document.createElement('div');
+    foodBox.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text);line-height:1.65';
+    foodBox.textContent = food; modal.appendChild(foodBox);
+  }
+  var closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'width:100%;padding:12px;border-radius:10px;background:var(--max-light);color:#000;border:none;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:var(--font-head)';
+  closeBtn.textContent = 'Done';
+  closeBtn.addEventListener('click', function(){ overlay.remove(); });
+  modal.appendChild(closeBtn);
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
 function renderPrepQueue() {
   var out = document.getElementById('prep-queue-output');
   if (!out) return;
@@ -12964,16 +14243,26 @@ function renderPrepQueue() {
 
     block.meals.forEach(function(meal, mi) {
       var isLast = mi === block.meals.length - 1;
-      html += '<div class="prep-row" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:' + (isLast ? '0' : '6') + 'px;display:flex;align-items:flex-start;gap:10px">'
-        + '<div style="width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:transparent;transition:all 0.15s" onclick="togglePrepCheckbox(this)"></div>'
+      var libEntry = getMealLibraryEntry(meal.mealName) || getMealLibraryEntry(meal.food);
+      var ingredients = libEntry ? (libEntry.ingredients||'') : '';
+      var method = libEntry ? (libEntry.method||'') : '';
+      var hasDetail = !!(ingredients||method||meal.food);
+      var safeFood = (meal.food||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+      var safeIng = ingredients.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+      var safeMeth = method.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+      var safeName = (meal.mealName||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+      html += '<div class="prep-row" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:' + (isLast ? '0' : '6') + 'px">'
+        + '<div style="display:flex;align-items:flex-start;gap:10px">'
+        + '<div style="width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:2px;cursor:pointer;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:transparent;transition:all 0.15s" onclick="togglePrepCheckbox(this)"></div>'
         + '<div style="flex:1;min-width:0">'
-        + '<div style="display:flex;align-items:baseline;gap:7px;margin-bottom:4px">'
-        + '<span style="font-size:0.78rem;font-weight:700;color:var(--text)">' + meal.mealName + '</span>'
+        + '<div style="display:flex;align-items:baseline;gap:7px;margin-bottom:3px">'
+        + '<span style="font-size:0.82rem;font-weight:700;color:var(--text)">' + meal.mealName + '</span>'
         + (!meal.solo ? '<span style="font-size:0.65rem;color:var(--muted)">' + meal.whoEmoji + ' ' + meal.who + '</span>' : '')
         + '<span style="margin-left:auto;font-size:0.65rem;color:var(--muted);white-space:nowrap">' + (meal.protein||0) + 'g · ' + (meal.calories||0) + ' kcal</span>'
         + '</div>'
-        + '<div style="font-size:0.78rem;color:var(--muted);line-height:1.55">' + meal.food + '</div>'
-        + '</div></div>';
+        + '<div style="font-size:0.75rem;color:var(--muted);line-height:1.5;margin-bottom:' + (hasDetail?'8':'0') + 'px">' + meal.food + '</div>'
+        + (hasDetail ? '<button onclick="openPrepMealModal(&quot;' + safeName + '&quot;,&quot;' + safeFood + '&quot;,&quot;' + safeIng + '&quot;,&quot;' + safeMeth + '&quot;,' + (meal.protein||0) + ',' + (meal.calories||0) + ')" style="font-size:0.72rem;font-weight:700;color:var(--active);background:rgba(0,255,135,0.08);border:1px solid rgba(0,255,135,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:var(--font-body)">📋 Full recipe</button>' : '')
+        + '</div></div></div>';
     });
 
     html += '</div>';
@@ -15721,6 +17010,7 @@ function switchNutrTab(tab, btn) {
 
 // ============ SETTINGS ACCORDION ============
 function toggleAccordion(id) {
+  if (id === 'acc-notifications') { setTimeout(function(){ renderNotifToggles(); }, 50); }
   const el = document.getElementById(id);
   if (!el) return;
   const wasOpen = el.classList.contains('open');
@@ -16428,6 +17718,13 @@ async function generateAIPlan(context) {
     ? `\u26a0\ufe0f CALORIE RESERVE: User wants ${calorieReserve} kcal held back for a treat outside the plan. Build meals to hit ${adjCalMin}\u2013${adjCalMax} kcal/day from food only. Protein target is unchanged.`
     : '';
 
+  const stapleMealsForPrompt = prefs.stapleMeals || [];
+  const staplePromptStr = stapleMealsForPrompt.length
+    ? `STAPLE MEALS (FIXED — include these EVERY day, exactly as listed, do NOT replace or omit them):\n${stapleMealsForPrompt.map(s =>
+        `  - Slot: ${s.mealType || 'Any'} | Name: ${s.name} | ${s.calories||0} kcal, ${s.protein||0}g protein, ${s.carbs||0}g carbs, ${s.fat||0}g fat\n    → Include this meal verbatim in every day. Do NOT generate a different meal for this slot.`
+      ).join('\n')}\nThe macro targets below have already had these staple meals subtracted. Only generate the REMAINING meals.`
+    : '';
+
   const prompt = `You are an expert sports nutritionist and body recomposition specialist. Create a personalised 7-day meal plan.
 
 USER PROFILE:
@@ -16451,7 +17748,7 @@ CUSTOM RECIPES (user-created — MUST be scheduled):
 ${recipeStr}
 ${mustIncludeRecipesStr}
 
-PLAN REQUIREMENTS:
+${staplePromptStr ? staplePromptStr + '\n\n' : ''}PLAN REQUIREMENTS:
 1. Generate exactly 7 days: Monday through Sunday
 2. Each day must have EXACTLY ${prefs.mealCount} meals
 3. Day types: Mon=training, Tue=training, Wed=recovery, Thu=training, Fri=training, Sat=cardio, Sun=rest
@@ -16459,13 +17756,14 @@ PLAN REQUIREMENTS:
 5. Hit calorie AND protein targets every single day — check your numbers before responding
 6. ${mealSelectionRule}
 7. BUDGET ENFORCEMENT — Every meal has a cost_p (pence). Sum of all cost_p values across the week MUST stay within weekly budget. If no budget is set, prefer lower-cost options where macros allow.
-8. Vary meals across the week — never use the same meal for the same slot on consecutive days
-9. Include a higher-carb meal pre-workout on training days
-10. NEVER include any avoided foods
-11. When using a custom recipe, use its exact name in the food field
-12. Every meal MUST include a "cost_p" field (library value, or estimated pence for custom meals)
-13. Use the exact "name" from the meal library as the meal name field in JSON
-14. SERVING SIZE SCALING — You MUST adjust portion sizes to hit the user's daily macro targets. The library shows base macros at standard portions. Scale UP or DOWN as needed:
+8. STAPLE MEALS — if staple meals are listed above, include them verbatim in every single day. Never replace, swap or omit a staple meal. Generate other meals only for the remaining slots.
+9. Vary non-staple meals across the week — never use the same generated meal for the same slot on consecutive days
+10. Include a higher-carb meal pre-workout on training days
+11. NEVER include any avoided foods
+12. When using a custom recipe, use its exact name in the food field
+13. Every meal MUST include a "cost_p" field (library value, or estimated pence for custom meals)
+14. Use the exact "name" from the meal library as the meal name field in JSON
+15. SERVING SIZE SCALING — You MUST adjust portion sizes to hit the user's daily macro targets. The library shows base macros at standard portions. Scale UP or DOWN as needed:
     - If daily protein target is 180g across 5 meals, each meal needs ~36g average protein
     - Scale protein sources: "160g chicken" → "200g chicken" if protein is short
     - Scale carb sources: "100g rice" → "130g rice" if calories are short on rest days
@@ -16546,16 +17844,29 @@ Respond ONLY with a valid JSON array. No explanation, no markdown, no backticks.
         ${costSummaryHtml}
       </div>
       <div style="font-family:var(--font-head);font-size:0.95rem;font-weight:700;margin-bottom:12px">✨ Your personalised plan is ready</div>
-      ${plan.map(day => `
-        <div class="ai-day-plan">
-          <div class="ai-day-title">${day.day} — ${day.focus||day.type}</div>
-          ${(day.meals||[]).map(m => `<div class="ai-meal-row">
-            <div class="ai-meal-name">${m.name}</div>
-            <div class="ai-meal-food">${m.food}</div>
-            <div class="ai-meal-macros">${m.protein}g · ${m.calories} kcal${m.cost_p ? ' · <span style="color:var(--muted)">£'+(m.cost_p/100).toFixed(2)+'</span>' : ''}</div>
-          </div>`).join('')}
-        </div>
-      `).join('')}
+      ${plan.map((day, di) => {
+        const dayTotalCal  = (day.meals||[]).reduce((s,m) => s+(m.calories||0), 0);
+        const dayTotalProt = (day.meals||[]).reduce((s,m) => s+(m.protein||0), 0);
+        const isFirst = di === 0;
+        return `<div class="ai-day-plan${isFirst ? ' open' : ''}" id="ai-day-${di}">
+          <div class="ai-day-header" onclick="toggleAIDayPlan(${di})">
+            <div>
+              <div class="ai-day-title">${day.day} — ${day.focus||day.type}</div>
+              <div class="ai-day-meta">${dayTotalCal} kcal · ${dayTotalProt}g protein · ${(day.meals||[]).length} meals</div>
+            </div>
+            <div class="ai-day-chevron">▾</div>
+          </div>
+          <div class="ai-day-body">
+            ${(day.meals||[]).map(m => `<div class="ai-meal-row">
+              <div class="ai-meal-header">
+                <div class="ai-meal-name">${m.name}</div>
+                <div class="ai-meal-macros">${m.protein}g protein · ${m.calories} kcal${m.cost_p ? ' · £'+(m.cost_p/100).toFixed(2) : ''}</div>
+              </div>
+              <div class="ai-meal-food">${m.food}</div>
+            </div>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
       <button class="apply-plan-btn" onclick="applyAIPlan()">✅ Apply this plan</button>
       <button onclick="generateAIPlan()" style="width:100%;padding:10px;border-radius:8px;font-size:0.85rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);margin-top:8px">🔄 Regenerate</button>
     `;
@@ -16568,6 +17879,11 @@ Respond ONLY with a valid JSON array. No explanation, no markdown, no backticks.
     </div>`;
     if (btn) { btn.textContent = '✨ Generate My Meal Plan'; btn.disabled = false; }
   }
+}
+
+function toggleAIDayPlan(idx) {
+  const el = document.getElementById('ai-day-' + idx);
+  if (el) el.classList.toggle('open');
 }
 
 function applyAIPlan() {
@@ -16670,10 +17986,10 @@ function getWorkoutForDayFromPlan(profile, dayIdx) {
   const plan = getActivePlan(profile);
   if (!plan) return null;
   const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  // Apply this-week-only session swap if one exists
   const weekKey = getWeekKey();
   const swapKey = profile + '_' + weekKey + '_' + dayIdx;
   const swappedFromIdx = sessionDaySwaps[swapKey];
+  if (swappedFromIdx === -1) return null;
   const effectiveDayIdx = (swappedFromIdx !== undefined) ? swappedFromIdx : dayIdx;
   const dayName = days[effectiveDayIdx];
   const dayPlan = plan.schedule.find(d => d.day === dayName);
@@ -18326,6 +19642,170 @@ function getActiveRecovery(yesterdayWorkout) {
 }
 
 // ============ UPDATED WORKOUT RENDERER (uses active plan) ============
+// ── PRE-SESSION COACH ──
+function openPreSessionCoach(dayIdx) {
+  var existing = document.getElementById('pre-session-overlay');
+  if (existing) existing.remove();
+  var plan = getActivePlan(currentProfile);
+  var workout = getWorkoutForDayFromPlan(currentProfile, dayIdx);
+  if (!workout || workout === 'cardio') return;
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'pre-session-overlay';
+  var m = document.createElement('div');
+  m.className = 'modal';
+  m.style.cssText = 'max-height:88vh;overflow-y:auto';
+  var handle = document.createElement('div'); handle.className='modal-handle'; m.appendChild(handle);
+  var title = document.createElement('div'); title.className='modal-title'; title.textContent='🧠 How are you feeling today?'; m.appendChild(title);
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:0.78rem;color:var(--muted);margin-bottom:18px;line-height:1.5';
+  sub.textContent = "Your coach will use this to set the right weights for today's session.";
+  m.appendChild(sub);
+  function makeChips(label, id, items, field) {
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px';
+    lbl.textContent = label; m.appendChild(lbl);
+    var grid = document.createElement('div');
+    grid.id = id;
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat('+items.length+',1fr);gap:6px;margin-bottom:16px';
+    items.forEach(function(txt,i){
+      var btn = document.createElement('button');
+      btn.style.cssText = 'padding:8px 4px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:0.72rem;color:var(--muted);cursor:pointer;font-family:var(--font-body);text-align:center';
+      btn.textContent = txt;
+      btn.addEventListener('click', function(){ pscPick(field, i+1, btn); });
+      grid.appendChild(btn);
+    }); m.appendChild(grid);
+  }
+  makeChips('Energy level','psc-energy',['💀 Dead','😴 Low','😐 OK','💪 Good','⚡ Fired up'],'energy');
+  makeChips('Sleep last night','psc-sleep',['< 5hrs','5–6hrs','6–7hrs','7hrs+'],'sleep');
+  makeChips('Soreness or niggles?','psc-soreness',['None','Some DOMS','Pain / injury'],'soreness');
+  var ta = document.createElement('textarea');
+  ta.id='psc-notes'; ta.placeholder='Anything else? (optional)';
+  ta.style.cssText='width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.82rem;color:var(--text);font-family:var(--font-body);min-height:60px;resize:none;box-sizing:border-box;margin-bottom:14px';
+  m.appendChild(ta);
+  var goBtn = document.createElement('button');
+  goBtn.style.cssText='width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head);margin-bottom:8px';
+  goBtn.textContent='Get my session plan →';
+  goBtn.addEventListener('click', function(){ runPreSessionCoach(dayIdx); });
+  m.appendChild(goBtn);
+  var cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText='width:100%;padding:10px;border-radius:10px;background:none;border:none;font-size:0.82rem;color:var(--muted);cursor:pointer';
+  cancelBtn.textContent='Cancel';
+  cancelBtn.addEventListener('click', function(){ overlay.remove(); });
+  m.appendChild(cancelBtn);
+  overlay.appendChild(m);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  window._pscState = { energy:null, sleep:null, soreness:null };
+}
+
+function pscPick(field, val, el) {
+  window._pscState = window._pscState || {};
+  window._pscState[field] = val;
+  var container = el.parentElement;
+  container.querySelectorAll('button').forEach(function(b){
+    b.style.background='var(--surface2)'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)';
+  });
+  el.style.background='rgba(0,255,135,0.12)'; el.style.color='var(--max-light)'; el.style.borderColor='rgba(0,255,135,0.4)';
+}
+
+async function runPreSessionCoach(dayIdx) {
+  var state = window._pscState || {};
+  var apiKey = getApiKey();
+  if (!apiKey) { showToast('Add an API key in Settings to use the session coach'); return; }
+  var profile = currentProfile;
+  var plan = getActivePlan(profile);
+  var workout = getWorkoutForDayFromPlan(profile, dayIdx);
+  if (!workout || workout === 'cardio') return;
+  var prefs = getPrefs(profile);
+  var p = PROFILES[profile];
+  var notes = (document.getElementById('psc-notes')||{}).value || '';
+  var energyLabels = {1:'dead / completely drained',2:'low energy',3:'OK / average',4:'good',5:'fired up'};
+  var sleepLabels = {1:'under 5 hours',2:'5-6 hours',3:'6-7 hours',4:'7+ hours'};
+  var sorenessLabels = {1:'no soreness',2:'some DOMS',3:'pain or injury concern'};
+  var energyStr = energyLabels[state.energy] || 'not specified';
+  var sleepStr = sleepLabels[state.sleep] || 'not specified';
+  var sorenessStr = sorenessLabels[state.soreness] || 'not specified';
+  var modal = document.querySelector('#pre-session-overlay .modal');
+  if (modal) {
+    modal.innerHTML = '<div class="modal-handle"></div><div class="modal-title">🧠 Building your session plan…</div>'
+      +'<div class="ai-loading" style="padding:24px 0"><div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>'
+      +'<div style="font-size:0.82rem;color:var(--muted);margin-top:12px">Reading your history and setting weights…</div></div>';
+  }
+  var workoutName = workout.name || '';
+  var pastSessions = (workoutHistory[profile]||[]).filter(function(s){ return s.workoutName===workoutName; }).slice(-3);
+  var exerciseLines = workout.exercises.map(function(ex) {
+    var history = [];
+    pastSessions.forEach(function(session) {
+      var logged = (session.exercises||[]).find(function(e){ return e.name===ex.name; });
+      if (!logged) return;
+      var doneSets = (logged.sets||[]).filter(function(s){ return s.done&&!s.skipped; });
+      if (!doneSets.length) return;
+      var dateStr = new Date(session.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      var setStr = doneSets.map(function(s){ return (s.weight||'—')+'kg×'+(s.reps||'—')+(s.rpe?'@RPE'+s.rpe:''); }).join(', ');
+      var maxW = Math.max.apply(null, doneSets.map(function(s){return s.weight||0;}));
+      history.push(dateStr+': '+setStr+(maxW?' [top '+maxW+'kg]':''));
+    });
+    var line = ex.name+' — '+ex.sets+'×'+ex.reps;
+    var currentDefault = getPlanWeight(profile, ex.name, 0);
+    if (currentDefault) line += ', current default: '+currentDefault+'kg';
+    var orm = getLatest1RM(profile, ex.name);
+    if (orm) line += ', 1RM: '+orm+'kg';
+    if (history.length) line += '\n  Recent: '+history.join(' | ');
+    else line += '\n  No previous sessions logged';
+    return line;
+  }).join('\n\n');
+  var coachCtx = getCoachContext(profile);
+  var weekNum = trainingWeekCount[profile]||1;
+  var prompt = "You are a personal trainer prescribing exact weights for an athlete's upcoming session.\n"
+    +"ATHLETE: "+p.name+" · "+(p.sex||'not specified')+" · Goal: "+(prefs.goal||'recomp')+"\n"
+    +"PLAN: "+plan.name+" · Week "+weekNum+"\n"
+    +"TODAY'S SESSION: "+workoutName+"\n"
+    +coachCtx+"\n"
+    +"TODAY'S READINESS:\n"
+    +"  Energy: "+energyStr+"\n"
+    +"  Sleep: "+sleepStr+"\n"
+    +"  Soreness: "+sorenessStr+"\n"
+    +(notes?"  Notes: "+notes+"\n":"")
+    +"\nEXERCISES AND HISTORY:\n"+exerciseLines+"\n\n"
+    +"INSTRUCTIONS:\n"
+    +"1. For each exercise prescribe: exact weight (kg), sets, reps, and RPE target\n"
+    +"2. Base weights on logged history — if RPE was <=7 and all sets done, increase by 2.5kg\n"
+    +"3. Adjust DOWN if: energy low (1-2), sleep under 6hrs, soreness/pain flagged\n"
+    +"   - Low energy/poor sleep: reduce 5-10%, focus on form\n"
+    +"   - Pain/injury: flag exercise, suggest modification or skip\n"
+    +"4. No history: prescribe sensible starting weight for their level\n"
+    +"5. One-line coaching note per exercise\n"
+    +"6. End with 2-sentence session summary\n\n"
+    +"Format each exercise as:\n"
+    +"**[Exercise name]**\n"
+    +"Weight: [X]kg · [sets]x[reps] · Target RPE [X]\n"
+    +"Note: [coaching note]\n\n"
+    +"Then: **Session summary**\n[2 sentences]";
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+    });
+    var data = await response.json();
+    var text = data.content&&data.content[0]?data.content[0].text.trim():'';
+    if (!text) throw new Error('Empty response');
+    var resultModal = document.querySelector('#pre-session-overlay .modal');
+    if (!resultModal) return;
+    var html = text.replace(/\*\*(.+?)\*\*/g,'<b style="color:var(--text)">$1</b>').replace(/\n/g,'<br>');
+    resultModal.innerHTML = '<div class="modal-handle"></div>'
+      +'<div class="modal-title">💪 '+workoutName+" — Today's Plan</div>"
+      +'<div style="font-size:0.82rem;line-height:1.8;color:var(--muted);margin-bottom:16px">'+html+'</div>'
+      +'<button onclick="document.getElementById(&quot;pre-session-overlay&quot;).remove()" style="width:100%;padding:13px;background:var(--max-light);color:#000;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-head)">Let\'s go 💪</button>';
+  } catch(e) {
+    var errModal = document.querySelector('#pre-session-overlay .modal');
+    if (errModal) errModal.innerHTML = '<div class="modal-handle"></div><div class="modal-title">⚠️ Couldn\'t generate plan</div>'
+      +'<div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px">Try again or start the session manually.</div>'
+      +'<button onclick="document.getElementById(&quot;pre-session-overlay&quot;).remove()" style="width:100%;padding:12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-size:0.85rem;cursor:pointer">Close</button>';
+  }
+}
+
 function renderWorkoutFromPlan(idx) {
   renderWeekFeedbackBanner();
   const plan = getActivePlan(currentProfile);
@@ -18407,18 +19887,28 @@ function renderWorkoutFromPlan(idx) {
       + '</div>';
 
     if (!isAIUser()) {
-      // FREE tier — generic tips + upgrade prompt
+      // FREE tier -- smart recovery prominence
+      const freeYesterdayIdx2 = (idx + 6) % 7;
+      const freeYesterdayWorkout2 = getWorkoutForDayFromPlan(currentProfile, freeYesterdayIdx2) || getWorkoutForDay(currentProfile, freeYesterdayIdx2);
+      const freeYesterdayName2 = (freeYesterdayWorkout2 && freeYesterdayWorkout2 !== 'cardio' && freeYesterdayWorkout2.name) ? freeYesterdayWorkout2.name : null;
       content.innerHTML = heroHtml
         + '<div class="prep-card" style="background:var(--surface2)">'
-        + '<div class="prep-card-title">Rest Day Tips</div>'
-        + '<div class="prep-item"><div class="prep-dot"></div><div class="prep-text">Aim for 7,000–9,000 steps today.</div></div>'
-        + '<div class="prep-item"><div class="prep-dot"></div><div class="prep-text">Prioritise sleep — 7–9 hours, consistent schedule.</div></div>'
-        + '<div class="prep-item"><div class="prep-dot"></div><div class="prep-text">Hit your protein target even on rest days — muscle repair continues.</div></div>'
+        + '<div class="prep-card-title">Rest Day</div>'
+        + '<div class="prep-item"><div class="prep-dot"></div><div class="prep-text">Aim for 7,000–9,000 steps — light movement accelerates recovery without adding fatigue.</div></div>'
+        + '<div class="prep-item"><div class="prep-dot"></div><div class="prep-text">Prioritise sleep — 7–9 hours. This is when the adaptation from yesterday happens.</div></div>'
+        + '<div class="prep-item"><div class="prep-dot"></div><div class="prep-text">Hit your protein target — muscle protein synthesis continues for 24–48hrs after training.</div></div>'
         + '</div>'
-        + '<div style="margin-top:10px;background:rgba(77,156,255,0.06);border:1px solid rgba(77,156,255,0.2);border-radius:var(--radius);padding:14px 16px">'
-        + '<div style="font-size:0.78rem;font-weight:700;color:#4d9cff;margin-bottom:4px">🔓 Smart Recovery — Standard AI</div>'
-        + '<div style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-bottom:10px">Upgrade to get targeted mobility and stretching routines based on what you trained yesterday.</div>'
-        + '<button onclick="showPage(\'settings\',null)" style="padding:7px 16px;background:rgba(77,156,255,0.12);border:1px solid rgba(77,156,255,0.3);border-radius:8px;font-size:0.75rem;font-weight:700;color:#4d9cff;cursor:pointer;font-family:var(--font-body)">Unlock with API key &#8594;</button>'
+        + '<div style="margin-top:10px;background:rgba(77,156,255,0.06);border:1px solid rgba(77,156,255,0.25);border-radius:var(--radius);padding:16px">'
+        + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        + '<div style="font-size:0.82rem;font-weight:700;color:#4d9cff">&#x1F504; Smart Active Recovery</div>'
+        + '<span style="font-size:0.6rem;background:rgba(77,156,255,0.12);color:#4d9cff;border:1px solid rgba(77,156,255,0.3);border-radius:6px;padding:2px 7px;font-weight:700">STANDARD AI</span>'
+        + '</div>'
+        + (freeYesterdayName2
+            ? '<div style="font-size:0.78rem;color:var(--text);font-weight:600;margin-bottom:6px">Yesterday: ' + freeYesterdayName2 + '</div>'
+              + '<div style="font-size:0.75rem;color:var(--muted);line-height:1.55;margin-bottom:12px">With an API key, your coach reads what you trained yesterday and generates a targeted mobility routine for those exact muscles — a specific protocol for your session, not generic tips.</div>'
+            : '<div style="font-size:0.75rem;color:var(--muted);line-height:1.55;margin-bottom:12px">Your coach reads what you trained yesterday and generates a targeted mobility and stretching routine for those exact muscles. Add an API key to unlock it.</div>'
+          )
+        + '<button onclick="showPage(\'settings\',document.querySelectorAll(\'.nav-item\')[6])" style="width:100%;padding:10px;background:rgba(77,156,255,0.12);border:1px solid rgba(77,156,255,0.3);border-radius:8px;font-size:0.82rem;font-weight:700;color:#4d9cff;cursor:pointer;font-family:var(--font-body)">Add API key to unlock &#8594;</button>'
         + '</div>'
         + adHocHtml;
     } else {
@@ -18485,22 +19975,36 @@ function renderWorkoutFromPlan(idx) {
   }
 
   const estMins = estimateWorkoutTime(workout.exercises, wKey);
-  subtitle.textContent = workout.name + '  ·  ~' + estMins + ' min';
+  const effectiveWorkout2 = getWorkoutForDayFromPlan(currentProfile, currentDayIdx);
+  const displayName = (effectiveWorkout2 && effectiveWorkout2.name) ? effectiveWorkout2.name : workout.name;
+  subtitle.textContent = displayName + '  ·  ~' + estMins + ' min';
 
-  // Show Move button only on training days, and show swap indicator if moved
-  const moveBtn = document.getElementById('move-session-btn');
-  if (moveBtn) {
-    const weekKey = getWeekKey();
-    const swapKey = currentProfile + '_' + weekKey + '_' + currentDayIdx;
-    const isMoved = sessionDaySwaps[swapKey] !== undefined;
-    moveBtn.style.display = '';
-    moveBtn.textContent = isMoved ? '↕️ Moved ✓' : '↕️ Move';
-    moveBtn.style.color = isMoved ? 'var(--active)' : '';
-    moveBtn.style.borderColor = isMoved ? 'var(--active)' : '';
-    moveBtn.onclick = isMoved
-      ? function() {
-          if (confirm('Clear the session move for today?')) clearSessionDaySwap(currentDayIdx);
-        }
+  // Pre-session coach button
+  const preSessionBtn = document.getElementById('pre-session-coach-btn');
+  if (preSessionBtn) {
+    const existingLogs2 = workoutLogs[wKey] || {};
+    const sessionStarted = workout.exercises.some(function(_, ei) {
+      const exLogs = existingLogs2[ei] || {};
+      return Object.keys(exLogs).filter(function(k){ return !isNaN(k); }).some(function(si){
+        return exLogs[si].done || exLogs[si].weight || exLogs[si].reps;
+      });
+    });
+    preSessionBtn.style.display = sessionStarted ? 'none' : '';
+    preSessionBtn.onclick = function() { openPreSessionCoach(currentDayIdx); };
+  }
+
+  // Move button
+  const moveBtn2 = document.getElementById('move-session-btn');
+  if (moveBtn2) {
+    const weekKey2 = getWeekKey();
+    const swapKey2 = currentProfile + '_' + weekKey2 + '_' + currentDayIdx;
+    const isMoved = sessionDaySwaps[swapKey2] !== undefined;
+    moveBtn2.style.display = '';
+    moveBtn2.textContent = isMoved ? '↕️ Moved ✓' : '↕️ Move';
+    moveBtn2.style.color = isMoved ? 'var(--active)' : '';
+    moveBtn2.style.borderColor = isMoved ? 'var(--active)' : '';
+    moveBtn2.onclick = isMoved
+      ? function() { if (confirm('Clear the session move for today?')) clearSessionDaySwap(currentDayIdx); }
       : function() { openMoveSessionModal(currentDayIdx); };
   }
 
@@ -18672,7 +20176,6 @@ function renderWorkoutFromPlan(idx) {
   });
 
   if (allExDone) {
-    // All done — full completion button
     const endBtn = document.createElement('button');
     endBtn.setAttribute('data-endwkey', wKey);
     endBtn.textContent = '🏁 End Workout & Save Summary';
@@ -18680,15 +20183,12 @@ function renderWorkoutFromPlan(idx) {
     endBtn.addEventListener('click', function() { openWorkoutSummary(this.getAttribute('data-endwkey')); });
     content.appendChild(endBtn);
   } else {
-    // Not all done — show End Early option when at least one set has been touched
     const earlyWrap = document.createElement('div');
     earlyWrap.style.cssText = 'margin-top:10px;display:flex;gap:8px;align-items:stretch';
-
     const skipBtn = document.createElement('button');
     skipBtn.textContent = '⏭ Skip remaining';
     skipBtn.style.cssText = 'flex:1;padding:11px 8px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-size:0.78rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font-body)';
     skipBtn.addEventListener('click', function() {
-      // Mark every un-completed exercise as completed with 0s so it logs cleanly
       workout.exercises.forEach(function(ex, ei) {
         const exSt = getExState(wKey, ei);
         if (!exSt.completed) {
@@ -18707,13 +20207,11 @@ function renderWorkoutFromPlan(idx) {
       saveAll();
       renderWorkout(currentDayIdx);
     });
-
     const earlyEndBtn = document.createElement('button');
     earlyEndBtn.setAttribute('data-endwkey', wKey);
     earlyEndBtn.textContent = '🛑 End session early';
     earlyEndBtn.style.cssText = 'flex:2;padding:11px 8px;border-radius:10px;background:rgba(255,77,106,0.1);border:1px solid rgba(255,77,106,0.35);font-size:0.82rem;font-weight:700;color:#ff4d6a;cursor:pointer;font-family:var(--font-body)';
     earlyEndBtn.addEventListener('click', function() { openWorkoutSummary(this.getAttribute('data-endwkey')); });
-
     if (anySetLogged) {
       earlyWrap.appendChild(skipBtn);
       earlyWrap.appendChild(earlyEndBtn);
@@ -20860,28 +22358,21 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 </div>
 
 <script>
-// ── Service Worker registration ──────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js').then(function(reg) {
-      // Check for updates every time the app loads
+    navigator.serviceWorker.register('/Famealy/sw.js').then(function(reg) {
       reg.update();
-
-      // When a new SW is waiting, prompt the user to refresh
       reg.addEventListener('updatefound', function() {
         const newWorker = reg.installing;
         newWorker.addEventListener('statechange', function() {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New version available — show a non-intrusive toast
             if (typeof showToast === 'function') {
               showToast('🔄 Update available — refresh to get the latest version', 6000);
             }
           }
         });
       });
-    }).catch(function(err) {
-      console.warn('Service worker registration failed:', err);
-    });
+    }).catch(function(err) { console.warn('Service worker registration failed:', err); });
   });
 }
 </script>
